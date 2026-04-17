@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>📊 Bet Portfolio Tracker · Storico Aprile 2026</title>
-    <!-- Chart.js per Equity Curve -->
+    <title>📊 Bet Portfolio Tracker · Aprile 2026</title>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -113,6 +113,11 @@
             box-shadow: none;
         }
         .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
+        .btn-warning {
+            background: #fef9c3;
+            color: #854d0e;
+            border-color: #fde047;
+        }
         .btn-danger {
             background: #fee2e2;
             color: #b91c1c;
@@ -131,8 +136,18 @@
             border-radius: 18px;
             padding: 16px;
         }
-        .kpi-label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; font-weight: 500; }
-        .kpi-value { font-size: 2rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+        .kpi-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
         .table-wrapper { overflow-x: auto; margin-top: 12px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         th {
@@ -170,18 +185,18 @@
         <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;">
             <div>
                 <h1 style="font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em;">📊 Bet‑Portfolio</h1>
-                <p style="color: #64748b;">Tracker basato su risk management dinamico · Dati Aprile 2026 pre-caricati</p>
+                <p style="color: #64748b;">Tracker dinamico · Dati aprile 2026 pre‑caricati</p>
             </div>
             <div style="text-align: right;">
                 <div style="font-size: 0.8rem; color: #64748b;">Cassa Attiva</div>
                 <div style="font-size: 2.2rem; font-weight: 800;" id="display-cassa-attiva">€ 0.00</div>
-                <div><span class="badge" id="risk-profile-badge">Conservativo (1.5%)</span></div>
+                <div><span class="badge" id="risk-profile-badge">Bilanciato (1.5%)</span></div>
             </div>
         </div>
         <div id="risk-alert" style="margin-top: 12px; padding: 10px 16px; background: #fff3cd; border-radius: 40px; color: #856404; display: none;"></div>
     </div>
 
-    <!-- Form Inserimento -->
+    <!-- Form Inserimento Rapido -->
     <div class="card">
         <div class="card-header">
             <h2><i class="fas fa-plus-circle" style="margin-right: 8px; color: #4f46e5;"></i>Nuova Operazione</h2>
@@ -233,16 +248,16 @@
         <div class="kpi-item"><div class="kpi-label">Totale Puntato</div><div class="kpi-value" id="kpi-total-stake">€0</div></div>
     </div>
 
-    <!-- Grafico Equity -->
+    <!-- Grafico Equity Curve -->
     <div class="card">
         <div class="card-header">
             <h2><i class="fas fa-chart-line"></i> Equity Curve (NAV)</h2>
-            <div><button class="btn btn-secondary btn-sm" id="export-csv-btn"><i class="fas fa-download"></i> Esporta CSV</button></div>
+            <button class="btn btn-secondary btn-sm" id="export-csv-btn"><i class="fas fa-download"></i> Esporta CSV</button>
         </div>
         <div class="chart-container"><canvas id="equityChart"></canvas></div>
     </div>
 
-    <!-- Configurazione -->
+    <!-- Configurazione e Gestione -->
     <div class="config-section">
         <div style="display: flex; flex-wrap: wrap; gap: 30px;">
             <div style="flex:2; min-width: 240px;">
@@ -278,7 +293,10 @@
                     </div>
                 </div>
                 <p style="margin-top: 12px; font-size:0.9rem;">💰 Cassa effettiva: <strong id="cassa-netta-display">€60.00</strong></p>
-                <button class="btn btn-danger btn-sm" id="reset-all-btn" style="margin-top: 12px;"><i class="fas fa-trash"></i> Reset storico</button>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button class="btn btn-warning btn-sm" id="load-aprile-btn"><i class="fas fa-calendar"></i> 📅 Carica storico Aprile</button>
+                    <button class="btn btn-danger btn-sm" id="reset-all-btn"><i class="fas fa-trash"></i> Reset</button>
+                </div>
             </div>
         </div>
     </div>
@@ -286,8 +304,8 @@
     <!-- Tabella Transazioni -->
     <div class="card" style="margin-top: 24px;">
         <div class="card-header">
-            <h2><i class="fas fa-list-ul"></i> Storico Operazioni (12 caricate)</h2>
-            <span class="badge" id="operation-count">12 op.</span>
+            <h2><i class="fas fa-list-ul"></i> Storico Operazioni</h2>
+            <span class="badge" id="operation-count">0 op.</span>
         </div>
         <div class="table-wrapper">
             <table id="transactions-table">
@@ -304,7 +322,7 @@
     (function(){
         "use strict";
 
-        // ---------- DATI STORICI REALI APRILE 2026 (pre-caricati) ----------
+        // ---------- STORICO APRILE 2026 (12 operazioni) ----------
         const STORICO_APRILE = [
             { data_ora: '2026-04-01 17:16', quota: 1.90, stake_euro: 10.00, esito: 'Vinto', tipo: 'Puntata' },
             { data_ora: '2026-04-05 20:46', quota: 2.10, stake_euro: 15.00, esito: 'Vinto', tipo: 'Puntata' },
@@ -320,27 +338,26 @@
             { data_ora: '2026-04-16 21:05', quota: 1.95, stake_euro: 5.00, esito: 'Vinto', tipo: 'Puntata' }
         ];
 
-        // Stato applicazione
+        // ---------- STATO APPLICAZIONE ----------
         let transactions = [];
         let cassaIniziale = 60.0;
         let prelieviTotali = 0.0;
         let versamentiTotali = 0.0;
         let riskPercent = 0.015; // 1.5%
-
         const RISK_WARNING_THRESHOLD = 0.05;
 
-        // DOM elements
+        // ---------- RIFERIMENTI DOM ----------
         const cassaAttivaEl = document.getElementById('display-cassa-attiva');
         const cassaNettaEl = document.getElementById('cassa-netta-display');
-        const riskProfileBadge = document.getElementById('risk-profile-badge');
+        const riskBadge = document.getElementById('risk-profile-badge');
         const stakeSlider = document.getElementById('stake-input-slider');
         const stakeDisplay = document.getElementById('stake-display');
         const quotaInput = document.getElementById('quota-input');
-        const anteprimaStakeEl = document.getElementById('anteprima-stake');
+        const anteprimaStake = document.getElementById('anteprima-stake');
         const formulaPreview = document.getElementById('formula-preview');
         const riskAlert = document.getElementById('risk-alert');
         const tableBody = document.getElementById('table-body');
-        const operationCountSpan = document.getElementById('operation-count');
+        const opCount = document.getElementById('operation-count');
         
         const kpiRoi = document.getElementById('kpi-roi');
         const kpiWinrate = document.getElementById('kpi-winrate');
@@ -351,13 +368,12 @@
         let equityChart;
         const ctx = document.getElementById('equityChart').getContext('2d');
 
-        // Helpers
+        // ---------- FUNZIONI UTILITY ----------
         function formatCurrency(val) { return '€ ' + val.toFixed(2); }
-        function formatPercent(val) { return val.toFixed(2) + '%'; }
-
+        
         function calcolaCassaAttiva() {
-            const profittoNettoTot = transactions.reduce((acc, t) => acc + (t.profitto_netto || 0), 0);
-            return cassaIniziale + profittoNettoTot - prelieviTotali + versamentiTotali;
+            const profittoNetto = transactions.reduce((acc, t) => acc + (t.profitto_netto || 0), 0);
+            return cassaIniziale + profittoNetto - prelieviTotali + versamentiTotali;
         }
 
         function calcolaStakeEuro(stakeInput) {
@@ -366,82 +382,53 @@
             return Math.round(cassa * (stakeInput / 10) * riskPercent * 100) / 100;
         }
 
+        function computeProfitto(t) {
+            if (t.tipo_operazione === 'Rimborsata' || t.esito === 'In Corso') return 0;
+            if (t.esito === 'Vinto') return (t.quota * t.stake_euro) - t.stake_euro;
+            return -t.stake_euro;
+        }
+
         function updateStakePreview() {
-            const stakeInput = parseInt(stakeSlider.value);
-            const stakeEuro = calcolaStakeEuro(stakeInput);
-            anteprimaStakeEl.textContent = `Stake € ${stakeEuro.toFixed(2)}`;
+            const stakeIn = parseInt(stakeSlider.value);
+            const stakeEuro = calcolaStakeEuro(stakeIn);
+            anteprimaStake.textContent = `Stake € ${stakeEuro.toFixed(2)}`;
             const cassa = calcolaCassaAttiva();
-            formulaPreview.textContent = `${formatCurrency(cassa)} * (${stakeInput}/10) * ${(riskPercent*100).toFixed(2)}% = ${stakeEuro.toFixed(2)}€`;
+            formulaPreview.textContent = `${formatCurrency(cassa)} * (${stakeIn}/10) * ${(riskPercent*100).toFixed(2)}% = ${stakeEuro.toFixed(2)}€`;
             
             if (cassa > 0) {
-                const percentualeEsposta = (stakeEuro / cassa) * 100;
-                if (percentualeEsposta > 5.0) {
+                const perc = (stakeEuro / cassa) * 100;
+                if (perc > 5.0) {
                     riskAlert.style.display = 'block';
-                    riskAlert.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Attenzione: Stai puntando il ${percentualeEsposta.toFixed(1)}% del bankroll (soglia 5%).`;
+                    riskAlert.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Attenzione: Stai puntando il ${perc.toFixed(1)}% del bankroll (soglia 5%).`;
                 } else {
                     riskAlert.style.display = 'none';
                 }
             }
         }
 
-        function computeProfitto(t) {
-            if (t.tipo_operazione === 'Rimborsata') return 0;
-            if (t.esito === 'In Corso') return 0;
-            if (t.esito === 'Vinto') return (t.quota * t.stake_euro) - t.stake_euro;
-            return -t.stake_euro;
+        function updateRiskBadge() {
+            const pct = (riskPercent * 100).toFixed(1);
+            if (riskPercent === 0.01) riskBadge.textContent = 'Conservativo (1.0%)';
+            else if (riskPercent === 0.015) riskBadge.textContent = 'Bilanciato (1.5%)';
+            else if (riskPercent === 0.025) riskBadge.textContent = 'Aggressivo (2.5%)';
+            else riskBadge.textContent = `Personalizzato (${pct}%)`;
         }
 
-        function addTransaction(quota, stakeInput, esito, tipoOp) {
-            const stakeEuro = calcolaStakeEuro(stakeInput);
-            const id = 'new_' + Date.now() + '_' + Math.random().toString(36);
-            const now = new Date();
-            const dataOra = now.toISOString().slice(0,16).replace('T', ' ');
-            
-            const newTrans = {
-                id_operazione: id,
-                data_ora: dataOra,
-                tipo_operazione: tipoOp,
-                quota: parseFloat(quota),
-                stake_input: stakeInput,
-                stake_euro: stakeEuro,
-                esito: esito,
-                profitto_netto: 0
-            };
-            newTrans.profitto_netto = computeProfitto(newTrans);
-            transactions.push(newTrans);
-            saveToLocalStorage();
-            renderAll();
-        }
-
-        function deleteTransaction(id) {
-            transactions = transactions.filter(t => t.id_operazione !== id);
-            saveToLocalStorage();
-            renderAll();
-        }
-
-        function updateEsito(id, newEsito) {
-            const trans = transactions.find(t => t.id_operazione === id);
-            if (trans) {
-                trans.esito = newEsito;
-                trans.profitto_netto = computeProfitto(trans);
-                saveToLocalStorage();
-                renderAll();
-            }
-        }
-
+        // ---------- RENDER COMPLETO ----------
         function renderAll() {
             updateCassaDisplay();
             renderTable();
             renderKPI();
             renderChart();
             updateStakePreview();
-            operationCountSpan.textContent = transactions.length + ' op.';
+            opCount.textContent = transactions.length + ' op.';
+            document.getElementById('cassa-iniziale-input').value = cassaIniziale;
         }
 
         function updateCassaDisplay() {
             const attiva = calcolaCassaAttiva();
             cassaAttivaEl.textContent = formatCurrency(attiva);
-            const profittoNetto = transactions.reduce((acc,t)=> acc + (t.profitto_netto||0), 0);
+            const profittoNetto = transactions.reduce((acc, t) => acc + (t.profitto_netto || 0), 0);
             const cassaNetta = cassaIniziale + profittoNetto - prelieviTotali + versamentiTotali;
             cassaNettaEl.textContent = formatCurrency(cassaNetta);
         }
@@ -451,22 +438,23 @@
                 tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px;">Nessuna operazione.</td></tr>';
                 return;
             }
-            const sorted = [...transactions].sort((a,b)=> (a.data_ora < b.data_ora ? 1 : -1));
+            const sorted = [...transactions].sort((a, b) => (a.data_ora < b.data_ora ? 1 : -1));
             let html = '';
             sorted.forEach(t => {
                 const profitto = t.profitto_netto || 0;
                 const profitClass = profitto >= 0 ? 'profit-positive' : 'profit-negative';
+                const tipoIcon = t.tipo_operazione === 'Rimborsata' ? '↩️' : '🎯';
                 html += `<tr>
                     <td>${t.data_ora}</td>
-                    <td>${t.tipo_operazione === 'Rimborsata' ? '↩️' : '🎯'} ${t.tipo_operazione}</td>
+                    <td>${tipoIcon} ${t.tipo_operazione}</td>
                     <td>${t.quota.toFixed(2)}</td>
                     <td>${t.stake_input || 5}/10</td>
                     <td>€ ${t.stake_euro.toFixed(2)}</td>
                     <td>
                         <select class="esito-cell-select" data-id="${t.id_operazione}" style="border:1px solid #e2e8f0; border-radius:30px; padding:4px 8px;">
-                            <option ${t.esito==='In Corso'?'selected':''}>In Corso</option>
-                            <option ${t.esito==='Vinto'?'selected':''}>Vinto</option>
-                            <option ${t.esito==='Perso'?'selected':''}>Perso</option>
+                            <option ${t.esito === 'In Corso' ? 'selected' : ''}>In Corso</option>
+                            <option ${t.esito === 'Vinto' ? 'selected' : ''}>Vinto</option>
+                            <option ${t.esito === 'Perso' ? 'selected' : ''}>Perso</option>
                         </select>
                     </td>
                     <td class="${profitClass}">${profitto >= 0 ? '+' : ''}€ ${profitto.toFixed(2)}</td>
@@ -474,14 +462,27 @@
                 </tr>`;
             });
             tableBody.innerHTML = html;
+            
             document.querySelectorAll('.esito-cell-select').forEach(sel => {
                 sel.addEventListener('change', (e) => {
-                    updateEsito(sel.dataset.id, sel.value);
+                    const id = sel.dataset.id;
+                    const trans = transactions.find(t => t.id_operazione === id);
+                    if (trans) {
+                        trans.esito = sel.value;
+                        trans.profitto_netto = computeProfitto(trans);
+                        saveToLocalStorage();
+                        renderAll();
+                    }
                 });
             });
+            
             document.querySelectorAll('.btn-delete').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    if(confirm('Eliminare operazione?')) deleteTransaction(btn.dataset.id);
+                    if (confirm('Eliminare questa operazione?')) {
+                        transactions = transactions.filter(t => t.id_operazione !== btn.dataset.id);
+                        saveToLocalStorage();
+                        renderAll();
+                    }
                 });
             });
         }
@@ -498,11 +499,11 @@
             const wr = closedTrans.length > 0 ? (vinte / closedTrans.length) * 100 : 0;
             kpiWinrate.textContent = wr.toFixed(1) + '%';
             
-            const avgQ = closedTrans.length > 0 ? closedTrans.reduce((s,t)=> s + t.quota, 0) / closedTrans.length : 0;
+            const avgQ = closedTrans.length > 0 ? closedTrans.reduce((s, t) => s + t.quota, 0) / closedTrans.length : 0;
             kpiAvgquote.textContent = avgQ.toFixed(2);
             
-            const profittiLordi = closedTrans.filter(t=>t.profitto_netto>0).reduce((s,t)=> s + t.profitto_netto, 0);
-            const perditeLorde = Math.abs(closedTrans.filter(t=>t.profitto_netto<0).reduce((s,t)=> s + t.profitto_netto, 0));
+            const profittiLordi = closedTrans.filter(t => t.profitto_netto > 0).reduce((s, t) => s + t.profitto_netto, 0);
+            const perditeLorde = Math.abs(closedTrans.filter(t => t.profitto_netto < 0).reduce((s, t) => s + t.profitto_netto, 0));
             const pf = perditeLorde > 0 ? profittiLordi / perditeLorde : (profittiLordi > 0 ? Infinity : 0);
             kpiProfitfactor.textContent = pf === Infinity ? '∞' : pf.toFixed(2);
             
@@ -532,14 +533,14 @@
                 });
             }
             
-            const sorted = [...transactions].sort((a,b)=> a.data_ora.localeCompare(b.data_ora));
+            const sorted = [...transactions].sort((a, b) => a.data_ora.localeCompare(b.data_ora));
             let runningBalance = cassaIniziale;
             const labels = ['Inizio'];
             const dataPoints = [cassaIniziale];
             
             sorted.forEach(t => {
                 runningBalance += (t.profitto_netto || 0);
-                labels.push(t.data_ora.slice(5,16));
+                labels.push(t.data_ora.slice(5, 16));
                 dataPoints.push(runningBalance);
             });
             
@@ -548,7 +549,7 @@
             equityChart.update();
         }
 
-        // Persistenza localStorage
+        // ---------- PERSISTENZA LOCALSTORAGE ----------
         function saveToLocalStorage() {
             const state = { transactions, cassaIniziale, prelieviTotali, versamentiTotali, riskPercent };
             localStorage.setItem('betPortfolioState', JSON.stringify(state));
@@ -564,63 +565,78 @@
                     prelieviTotali = state.prelieviTotali || 0;
                     versamentiTotali = state.versamentiTotali || 0;
                     riskPercent = state.riskPercent || 0.015;
-                } catch(e){}
+                } catch (e) {
+                    console.warn("Errore nel parsing localStorage, carico storico predefinito.");
+                    caricaStoricoAprile();
+                }
             } else {
-                // PRIMO AVVIO: carica i dati storici di aprile
+                // Primo avvio: carica i dati di aprile
                 caricaStoricoAprile();
             }
-            // Aggiorna UI
-            document.getElementById('cassa-iniziale-input').value = cassaIniziale;
-            document.getElementById('custom-risk').value = (riskPercent*100).toFixed(1);
+            document.getElementById('custom-risk').value = (riskPercent * 100).toFixed(1);
             updateRiskBadge();
             renderAll();
         }
 
         function caricaStoricoAprile() {
-            // Crea transazioni a partire dall'array storico
             transactions = STORICO_APRILE.map((t, idx) => {
                 const profitto = t.esito === 'Vinto' ? (t.quota * t.stake_euro) - t.stake_euro : -t.stake_euro;
                 return {
-                    id_operazione: 'hist_' + idx + '_' + Date.now(),
+                    id_operazione: 'hist_' + idx + '_' + Date.now() + idx,
                     data_ora: t.data_ora,
                     tipo_operazione: t.tipo,
                     quota: t.quota,
-                    stake_input: 5, // placeholder
+                    stake_input: 5,
                     stake_euro: t.stake_euro,
                     esito: t.esito,
                     profitto_netto: profitto
                 };
             });
             cassaIniziale = 60.0;
-            prelieviTotali = 0;
-            versamentiTotali = 0;
+            prelieviTotali = 0.0;
+            versamentiTotali = 0.0;
             riskPercent = 0.015;
             saveToLocalStorage();
         }
 
-        function updateRiskBadge() {
-            const pct = (riskPercent*100).toFixed(1);
-            let label = `Personalizzato (${pct}%)`;
-            if (riskPercent === 0.01) label = 'Conservativo (1.0%)';
-            else if (riskPercent === 0.015) label = 'Bilanciato (1.5%)';
-            else if (riskPercent === 0.025) label = 'Aggressivo (2.5%)';
-            riskProfileBadge.textContent = label;
+        // ---------- GESTIONE TRANSAZIONI ----------
+        function addTransaction(quota, stakeInput, esito, tipoOp) {
+            const stakeEuro = calcolaStakeEuro(stakeInput);
+            const id = 'new_' + Date.now() + '_' + Math.random().toString(36);
+            const now = new Date();
+            const dataOra = now.toISOString().slice(0, 16).replace('T', ' ');
+            
+            const newTrans = {
+                id_operazione: id,
+                data_ora: dataOra,
+                tipo_operazione: tipoOp,
+                quota: parseFloat(quota),
+                stake_input: stakeInput,
+                stake_euro: stakeEuro,
+                esito: esito,
+                profitto_netto: 0
+            };
+            newTrans.profitto_netto = computeProfitto(newTrans);
+            transactions.push(newTrans);
+            saveToLocalStorage();
+            renderAll();
         }
 
+        // ---------- ESPORTA CSV ----------
         function exportCSV() {
-            if (transactions.length === 0) { alert('Nessun dato'); return; }
+            if (transactions.length === 0) { alert('Nessuna operazione da esportare.'); return; }
             let csv = "ID,Data,Tipo,Quota,StakeInput,StakeEuro,Esito,ProfittoNetto\n";
             transactions.forEach(t => {
                 csv += `${t.id_operazione},${t.data_ora},${t.tipo_operazione},${t.quota},${t.stake_input || 5},${t.stake_euro},${t.esito},${t.profitto_netto}\n`;
             });
-            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `portfolio_export_${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
         }
 
-        // Event Listeners
+        // ---------- EVENT LISTENERS (DOMContentLoaded) ----------
         document.addEventListener('DOMContentLoaded', () => {
             loadFromLocalStorage();
             
@@ -632,7 +648,7 @@
             
             document.getElementById('add-operation-btn').addEventListener('click', () => {
                 const quota = parseFloat(quotaInput.value);
-                if (isNaN(quota) || quota < 1.0) { alert('Quota valida ≥1.0'); return; }
+                if (isNaN(quota) || quota < 1.0) { alert('Inserire una quota valida (≥1.0)'); return; }
                 const stakeInput = parseInt(stakeSlider.value);
                 const esito = document.getElementById('esito-select').value;
                 const tipo = document.getElementById('tipo-select').value;
@@ -645,7 +661,7 @@
                 updateStakePreview();
             });
             
-            document.getElementById('clear-form-btn').addEventListener('click', ()=>{
+            document.getElementById('clear-form-btn').addEventListener('click', () => {
                 quotaInput.value = '2.00';
                 stakeSlider.value = 3; stakeDisplay.textContent = '3/10';
                 document.getElementById('esito-select').value = 'In Corso';
@@ -654,9 +670,9 @@
             });
             
             document.querySelectorAll('.profile-btn').forEach(btn => {
-                btn.addEventListener('click', ()=>{
+                btn.addEventListener('click', () => {
                     riskPercent = parseFloat(btn.dataset.risk);
-                    document.getElementById('custom-risk').value = (riskPercent*100).toFixed(1);
+                    document.getElementById('custom-risk').value = (riskPercent * 100).toFixed(1);
                     updateRiskBadge();
                     updateStakePreview();
                     saveToLocalStorage();
@@ -664,9 +680,9 @@
                 });
             });
             
-            document.getElementById('apply-risk').addEventListener('click', ()=>{
+            document.getElementById('apply-risk').addEventListener('click', () => {
                 let val = parseFloat(document.getElementById('custom-risk').value);
-                if (!isNaN(val) && val>0) {
+                if (!isNaN(val) && val > 0) {
                     riskPercent = val / 100;
                     updateRiskBadge();
                     updateStakePreview();
@@ -674,31 +690,35 @@
                 }
             });
             
-            document.getElementById('cassa-iniziale-input').addEventListener('change', (e)=>{
+            document.getElementById('cassa-iniziale-input').addEventListener('change', (e) => {
                 let val = parseFloat(e.target.value);
-                if (!isNaN(val) && val>=0) {
+                if (!isNaN(val) && val >= 0) {
                     cassaIniziale = val;
                     saveToLocalStorage();
                     renderAll();
                 }
             });
             
-            function handleFlusso(moltiplicatore) {
-                const input = document.getElementById('flusso-input');
-                let val = parseFloat(input.value);
-                if (isNaN(val) || val<=0) { alert('Importo positivo'); return; }
-                if (moltiplicatore === -1) prelieviTotali += val;
-                else versamentiTotali += val;
-                input.value = '0';
+            document.getElementById('prelievo-btn').addEventListener('click', () => {
+                let val = parseFloat(document.getElementById('flusso-input').value);
+                if (isNaN(val) || val <= 0) { alert('Inserire un importo positivo'); return; }
+                prelieviTotali += val;
+                document.getElementById('flusso-input').value = '0';
                 saveToLocalStorage();
                 renderAll();
-            }
-            document.getElementById('prelievo-btn').addEventListener('click', ()=> handleFlusso(-1));
-            document.getElementById('versamento-btn').addEventListener('click', ()=> handleFlusso(1));
+            });
             
-            document.getElementById('reset-all-btn').addEventListener('click', ()=>{
-                if(confirm('Cancellare TUTTO e ricaricare lo storico di Aprile?')) {
-                    localStorage.removeItem('betPortfolioState');
+            document.getElementById('versamento-btn').addEventListener('click', () => {
+                let val = parseFloat(document.getElementById('flusso-input').value);
+                if (isNaN(val) || val <= 0) { alert('Inserire un importo positivo'); return; }
+                versamentiTotali += val;
+                document.getElementById('flusso-input').value = '0';
+                saveToLocalStorage();
+                renderAll();
+            });
+            
+            document.getElementById('load-aprile-btn').addEventListener('click', () => {
+                if (confirm('Sovrascrivere i dati attuali con lo storico completo di aprile 2026?')) {
                     caricaStoricoAprile();
                     renderAll();
                     document.getElementById('cassa-iniziale-input').value = 60;
@@ -707,7 +727,24 @@
                 }
             });
             
+            document.getElementById('reset-all-btn').addEventListener('click', () => {
+                if (confirm('Cancellare TUTTE le operazioni e ripristinare i valori di default?')) {
+                    localStorage.removeItem('betPortfolioState');
+                    transactions = [];
+                    cassaIniziale = 1000;
+                    prelieviTotali = 0;
+                    versamentiTotali = 0;
+                    riskPercent = 0.015;
+                    saveToLocalStorage();
+                    renderAll();
+                    document.getElementById('cassa-iniziale-input').value = 1000;
+                    document.getElementById('custom-risk').value = '1.5';
+                    updateRiskBadge();
+                }
+            });
+            
             document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
+            
             updateRiskBadge();
         });
 
