@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Portfolio Allocation Tracker · Bet-Investment</title>
+    <!-- Chart.js per il grafico Equity Curve -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Font Awesome per icone -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f6f9;
+            color: #1e293b;
+            padding: 16px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        /* Cards */
+        .card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid #eef2f6;
+            transition: all 0.1s ease;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .badge {
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        /* Form */
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 24px;
+            align-items: flex-end;
+        }
+        .form-group {
+            min-width: 140px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        input, select, .stake-slider {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            background: white;
+            transition: border 0.15s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
+        .stake-slider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stake-slider input[type="range"] {
+            flex: 1;
+            padding: 0;
+        }
+        .stake-value {
+            min-width: 48px;
+            text-align: center;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(79,70,229,0.25);
+            transition: 0.15s;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-secondary {
+            background: white;
+            color: #1e293b;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: none;
+        }
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+        }
+        .btn-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fecaca;
+            box-shadow: none;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        /* KPI cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .kpi-item {
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 16px;
+        }
+        .kpi-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+        .kpi-trend {
+            color: #10b981;
+            font-weight: 500;
+        }
+        /* tabella transazioni */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th {
+            text-align: left;
+            padding: 12px 8px;
+            color: #64748b;
+            font-weight: 500;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .profit-positive { color: #10b981; font-weight: 600; }
+        .profit-negative { color: #ef4444; font-weight: 600; }
+        .warning-badge {
+            background: #fef9c3;
+            color: #854d0e;
+            padding: 4px 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .chart-container {
+            height: 240px;
+            margin-top: 8px;
+        }
+        /* Config drawer */
+        .config-section {
+            background: #faf9fe;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    
+    <!-- Header con Cassa e Profilo -->
+    <div class="card" style="margin-bottom: 20px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+            <div>
+                <h1 style="font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em;">📊 Bet‑Portfolio</h1>
+                <p style="color: #64748b;">Tracker basato su risk management dinamico</p>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.8rem; color: #64748b;">Cassa Attiva (per stake)</div>
+                <div style="font-size: 2.2rem; font-weight: 800;" id="display-cassa-attiva">€ 0.00</div>
+                <div><span class="badge" id="risk-profile-badge">Conservativo (1.5%)</span></div>
+            </div>
+        </div>
+        <!-- Alert rischio -->
+        <div id="risk-alert" style="margin-top: 12px; padding: 10px 16px; background: #fff3cd; border-radius: 40px; color: #856404; display: none;"></div>
+    </div>
+
+    <!-- Form Inserimento Rapido -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-plus-circle" style="margin-right: 8px; color: #4f46e5;"></i>Nuova Operazione</h2>
+            <span class="badge" id="anteprima-stake">Stake € —</span>
+        </div>
+        <div class="form-grid">
+            <div class="form-group" style="min-width: 100px;">
+                <label>Quota</label>
+                <input type="number" id="quota-input" step="0.01" min="1.01" value="2.00" placeholder="es. 2.10">
+            </div>
+            <div class="form-group">
+                <label>Stake (1-10)</label>
+                <div class="stake-slider">
+                    <input type="range" id="stake-input-slider" min="1" max="10" value="3" step="1">
+                    <span class="stake-value" id="stake-display">3/10</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Esito</label>
+                <select id="esito-select">
+                    <option value="In Corso" selected>🔄 In Corso</option>
+                    <option value="Vinto">✅ Vinto</option>
+                    <option value="Perso">❌ Perso</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tipo</label>
+                <select id="tipo-select">
+                    <option value="Puntata">🎯 Puntata</option>
+                    <option value="Rimborsata">↩️ Rimborsata</option>
+                </select>
+            </div>
+            <div class="form-group" style="display: flex; gap: 8px;">
+                <button class="btn" id="add-operation-btn"><i class="fas fa-save"></i> Registra</button>
+                <button class="btn btn-secondary btn-sm" id="clear-form-btn"><i class="fas fa-undo-alt"></i></button>
+            </div>
+        </div>
+        <div style="font-size: 0.85rem; margin-top: 12px; color: #64748b;">
+            <i class="fas fa-calculator"></i> Stake dinamico: <span id="formula-preview">Cassa * (stake/10) * %Rischio</span>
+        </div>
+    </div>
+
+    <!-- KPI Dashboard -->
+    <div class="kpi-grid">
+        <div class="kpi-item">
+            <div class="kpi-label">ROI Totale</div>
+            <div class="kpi-value" id="kpi-roi">0.00%</div>
+            <div>su totale puntato</div>
+        </div>
+        <div class="kpi-item">
+            <div class="kpi-label">Win Rate</div>
+            <div class="kpi-value" id="kpi-winrate">0%</div>
+            <div>operazioni chiuse</div>
+        </div>
+        <div class="kpi-item">
+            <div class="kpi-label">Avg Quote</div>
+            <div class="kpi-value" id="kpi-avgquote">0.00</div>
+        </div>
+        <div class="kpi-item">
+            <div class="kpi-label">Profit Factor</div>
+            <div class="kpi-value" id="kpi-profitfactor">0.00</div>
+        </div>
+        <div class="kpi-item">
+            <div class="kpi-label">Totale Puntato</div>
+            <div class="kpi-value" id="kpi-total-stake">€0</div>
+        </div>
+    </div>
+
+    <!-- Grafico Equity Curve -->
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="fas fa-chart-line"></i> Equity Curve (NAV)</h2>
+            <div>
+                <button class="btn btn-secondary btn-sm" id="export-csv-btn"><i class="fas fa-download"></i> Esporta CSV</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="equityChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Sezione Configurazione & Prelievi -->
+    <div class="config-section">
+        <div style="display: flex; flex-wrap: wrap; gap: 30px;">
+            <div style="flex:2; min-width: 240px;">
+                <h3 style="margin-bottom: 16px;">⚙️ Profilo di Rischio</h3>
+                <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                    <button class="btn btn-secondary btn-sm profile-btn" data-risk="0.01">Conservativo (1%)</button>
+                    <button class="btn btn-secondary btn-sm profile-btn" data-risk="0.015">Bilanciato (1.5%)</button>
+                    <button class="btn btn-secondary btn-sm profile-btn" data-risk="0.025">Aggressivo (2.5%)</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <label>% Rischio personalizzata:</label>
+                    <input type="number" id="custom-risk" step="0.1" min="0.1" max="10" value="1.5" style="width: 100px;"> %
+                    <button class="btn btn-secondary btn-sm" id="apply-risk">Applica</button>
+                </div>
+                <div style="margin-top: 16px; background: #e6f7e6; padding: 12px; border-radius: 16px;">
+                    <i class="fas fa-shield-alt"></i> Soglia allarme: <strong>5%</strong> del bankroll per singola operazione.
+                </div>
+            </div>
+            <div style="flex:1.5;">
+                <h3 style="margin-bottom: 16px;">🏦 Gestione Cassa</h3>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <div style="flex:1;">
+                        <label>Cassa Iniziale</label>
+                        <input type="number" id="cassa-iniziale-input" step="10" value="1000" style="width:100%; padding:10px; border-radius: 16px; border:1px solid #e2e8f0;">
+                    </div>
+                    <div style="flex:1;">
+                        <label>Prelievo/Versamento</label>
+                        <div style="display: flex; gap: 6px;">
+                            <input type="number" id="flusso-input" step="10" value="0" placeholder="importo" style="width:100%; padding:10px; border-radius: 16px; border:1px solid #e2e8f0;">
+                            <button class="btn btn-secondary btn-sm" id="prelievo-btn" style="white-space: nowrap;">Prelievo</button>
+                            <button class="btn btn-secondary btn-sm" id="versamento-btn">Versa</button>
+                        </div>
+                    </div>
+                </div>
+                <p style="margin-top: 12px; font-size:0.9rem;">💰 Cassa effettiva (al netto prelievi): <strong id="cassa-netta-display">€1,000.00</strong></p>
+                <button class="btn btn-danger btn-sm" id="reset-all-btn" style="margin-top: 12px;"><i class="fas fa-trash"></i> Reset storico</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabella Transazioni -->
+    <div class="card" style="margin-top: 24px;">
+        <div class="card-header">
+            <h2><i class="fas fa-list-ul"></i> Storico Operazioni</h2>
+            <span class="badge" id="operation-count">0 op.</span>
+        </div>
+        <div class="table-wrapper">
+            <table id="transactions-table">
+                <thead>
+                    <tr><th>Data</th><th>Tipo</th><th>Quota</th><th>Stake (1-10)</th><th>Stake €</th><th>Esito</th><th>Profitto</th><th></th></tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        "use strict";
+
+        // ---------- Stato Applicazione ----------
+        let transactions = [];            // array di oggetti transazione
+        let cassaIniziale = 1000.0;
+        let prelieviTotali = 0.0;          // positivi = prelievi (riducono cassa)
+        let versamentiTotali = 0.0;
+        let riskPercent = 0.015;           // default 1.5%
+        const RISK_WARNING_THRESHOLD = 0.05; // 5% soglia allarme
+
+        // Riferimenti DOM
+        const cassaAttivaEl = document.getElementById('display-cassa-attiva');
+        const cassaNettaEl = document.getElementById('cassa-netta-display');
+        const riskProfileBadge = document.getElementById('risk-profile-badge');
+        const stakeSlider = document.getElementById('stake-input-slider');
+        const stakeDisplay = document.getElementById('stake-display');
+        const quotaInput = document.getElementById('quota-input');
+        const esitoSelect = document.getElementById('esito-select');
+        const tipoSelect = document.getElementById('tipo-select');
+        const anteprimaStakeEl = document.getElementById('anteprima-stake');
+        const formulaPreview = document.getElementById('formula-preview');
+        const riskAlert = document.getElementById('risk-alert');
+        const tableBody = document.getElementById('table-body');
+        const operationCountSpan = document.getElementById('operation-count');
+        
+        // KPI elements
+        const kpiRoi = document.getElementById('kpi-roi');
+        const kpiWinrate = document.getElementById('kpi-winrate');
+        const kpiAvgquote = document.getElementById('kpi-avgquote');
+        const kpiProfitfactor = document.getElementById('kpi-profitfactor');
+        const kpiTotalStake = document.getElementById('kpi-total-stake');
+
+        // Chart
+        let equityChart;
+        const ctx = document.getElementById('equityChart').getContext('2d');
+
+        // ---------- Funzioni di utilità ----------
+        function formatCurrency(val) { return '€ ' + val.toFixed(2); }
+        function formatPercent(val) { return val.toFixed(2) + '%'; }
+
+        // Calcola cassa attuale per stake (include profitti/perdite, meno prelievi, + versamenti)
+        function calcolaCassaAttiva() {
+            let profittoNettoTot = transactions.reduce((acc, t) => acc + (t.profitto_netto || 0), 0);
+            return cassaIniziale + profittoNettoTot - prelieviTotali + versamentiTotali;
+        }
+
+        // Calcola lo stake in euro dato stakeInput (1-10)
+        function calcolaStakeEuro(stakeInput) {
+            const cassa = calcolaCassaAttiva();
+            if (cassa <= 0) return 0;
+            let stakeEuro = cassa * (stakeInput / 10) * riskPercent;
+            return Math.round(stakeEuro * 100) / 100;
+        }
+
+        // Aggiorna anteprima e warning
+        function updateStakePreview() {
+            const stakeInput = parseInt(stakeSlider.value);
+            const stakeEuro = calcolaStakeEuro(stakeInput);
+            anteprimaStakeEl.textContent = `Stake € ${stakeEuro.toFixed(2)}`;
+            const cassa = calcolaCassaAttiva();
+            formulaPreview.textContent = `${formatCurrency(cassa)} * (${stakeInput}/10) * ${(riskPercent*100).toFixed(2)}% = ${stakeEuro.toFixed(2)}€`;
+            
+            // Controllo soglia rischio (stake / cassa > 5%?)
+            if (cassa > 0) {
+                const percentualeEsposta = (stakeEuro / cassa) * 100;
+                if (percentualeEsposta > 5.0) {
+                    riskAlert.style.display = 'block';
+                    riskAlert.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Attenzione: Stai puntando il ${percentualeEsposta.toFixed(1)}% del bankroll (soglia 5%).`;
+                } else {
+                    riskAlert.style.display = 'none';
+                }
+            }
+        }
+
+        // Calcola profitto netto per una transazione
+        function computeProfitto(t) {
+            if (t.tipo_operazione === 'Rimborsata') return 0; // rimborso non modifica profitto
+            if (t.esito === 'In Corso') return 0;
+            const stakeEuro = t.stake_euro;
+            if (t.esito === 'Vinto') {
+                return (t.quota * stakeEuro) - stakeEuro;
+            } else { // Perso
+                return -stakeEuro;
+            }
+        }
+
+        // Aggiungi transazione
+        function addTransaction(quota, stakeInput, esito, tipoOp) {
+            const stakeEuro = calcolaStakeEuro(stakeInput);
+            const id = Date.now() + '-' + Math.floor(Math.random()*1000);
+            const now = new Date();
+            const dataOra = now.toISOString().slice(0,16).replace('T', ' ');
+            
+            const newTrans = {
+                id_operazione: id,
+                data_ora: dataOra,
+                tipo_operazione: tipoOp,
+                quota: parseFloat(quota),
+                stake_input: stakeInput,
+                stake_euro: stakeEuro,
+                esito: esito,
+                profitto_netto: 0 // verrà ricalcolato
+            };
+            newTrans.profitto_netto = computeProfitto(newTrans);
+            transactions.push(newTrans);
+            saveToLocalStorage();
+            renderAll();
+        }
+
+        // Elimina transazione
+        function deleteTransaction(id) {
+            transactions = transactions.filter(t => t.id_operazione !== id);
+            saveToLocalStorage();
+            renderAll();
+        }
+
+        // Aggiorna esito di una transazione (da In Corso a Vinto/Perso)
+        function updateEsito(id, newEsito) {
+            const trans = transactions.find(t => t.id_operazione === id);
+            if (trans) {
+                trans.esito = newEsito;
+                trans.profitto_netto = computeProfitto(trans);
+                saveToLocalStorage();
+                renderAll();
+            }
+        }
+
+        // Render tabella e KPI
+        function renderAll() {
+            updateCassaDisplay();
+            renderTable();
+            renderKPI();
+            renderChart();
+            updateStakePreview();
+            operationCountSpan.textContent = transactions.length + ' op.';
+        }
+
+        function updateCassaDisplay() {
+            const attiva = calcolaCassaAttiva();
+            cassaAttivaEl.textContent = formatCurrency(attiva);
+            const profittoNetto = transactions.reduce((acc,t)=> acc + (t.profitto_netto||0), 0);
+            const cassaNetta = cassaIniziale + profittoNetto - prelieviTotali + versamentiTotali;
+            cassaNettaEl.textContent = formatCurrency(cassaNetta);
+        }
+
+        function renderTable() {
+            if (transactions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px;">Nessuna operazione. Aggiungi la prima.</td></tr>';
+                return;
+            }
+            // Ordina per data decrescente
+            const sorted = [...transactions].sort((a,b)=> (a.data_ora < b.data_ora ? 1 : -1));
+            let html = '';
+            sorted.forEach(t => {
+                const profitto = t.profitto_netto || 0;
+                const profitClass = profitto >= 0 ? 'profit-positive' : 'profit-negative';
+                const esitoBadge = t.esito === 'Vinto' ? '✅' : (t.esito === 'Perso' ? '❌' : '🔄');
+                const tipoIcon = t.tipo_operazione === 'Rimborsata' ? '↩️' : '🎯';
+                html += `<tr>
+                    <td>${t.data_ora}</td>
+                    <td>${tipoIcon} ${t.tipo_operazione}</td>
+                    <td>${t.quota.toFixed(2)}</td>
+                    <td>${t.stake_input}/10</td>
+                    <td>€ ${t.stake_euro.toFixed(2)}</td>
+                    <td>
+                        <select class="esito-cell-select" data-id="${t.id_operazione}" style="border:1px solid #e2e8f0; border-radius:30px; padding:4px 8px;">
+                            <option ${t.esito==='In Corso'?'selected':''}>In Corso</option>
+                            <option ${t.esito==='Vinto'?'selected':''}>Vinto</option>
+                            <option ${t.esito==='Perso'?'selected':''}>Perso</option>
+                        </select>
+                    </td>
+                    <td class="${profitClass}">${profitto >= 0 ? '+' : ''}€ ${profitto.toFixed(2)}</td>
+                    <td><button class="btn-delete" data-id="${t.id_operazione}" style="background:none; border:none; color:#94a3b8; cursor:pointer;"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            });
+            tableBody.innerHTML = html;
+            // Attach event listeners per select esito e delete
+            document.querySelectorAll('.esito-cell-select').forEach(sel => {
+                sel.addEventListener('change', (e) => {
+                    const id = sel.dataset.id;
+                    updateEsito(id, sel.value);
+                });
+            });
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = btn.dataset.id;
+                    if(confirm('Eliminare operazione?')) deleteTransaction(id);
+                });
+            });
+        }
+
+        function renderKPI() {
+            const closedTrans = transactions.filter(t => t.esito !== 'In Corso' && t.tipo_operazione !== 'Rimborsata');
+            const totalStake = transactions.reduce((sum, t) => sum + (t.stake_euro || 0), 0);
+            const totalProfit = transactions.reduce((sum, t) => sum + (t.profitto_netto || 0), 0);
+            
+            // ROI = (profitto / totale puntato) * 100
+            const roi = totalStake > 0 ? (totalProfit / totalStake) * 100 : 0;
+            kpiRoi.textContent = roi.toFixed(2) + '%';
+            
+            // Win rate su operazioni chiuse
+            const vinte = closedTrans.filter(t => t.esito === 'Vinto').length;
+            const wr = closedTrans.length > 0 ? (vinte / closedTrans.length) * 100 : 0;
+            kpiWinrate.textContent = wr.toFixed(1) + '%';
+            
+            // Media quote
+            const avgQ = closedTrans.length > 0 ? closedTrans.reduce((s,t)=> s + t.quota, 0) / closedTrans.length : 0;
+            kpiAvgquote.textContent = avgQ.toFixed(2);
+            
+            // Profit factor: profitti lordi / perdite lorde
+            const profittiLordi = closedTrans.filter(t=>t.profitto_netto>0).reduce((s,t)=> s + t.profitto_netto, 0);
+            const perditeLorde = Math.abs(closedTrans.filter(t=>t.profitto_netto<0).reduce((s,t)=> s + t.profitto_netto, 0));
+            const pf = perditeLorde > 0 ? profittiLordi / perditeLorde : (profittiLordi > 0 ? Infinity : 0);
+            kpiProfitfactor.textContent = pf === Infinity ? '∞' : pf.toFixed(2);
+            
+            kpiTotalStake.textContent = formatCurrency(totalStake);
+        }
+
+        function renderChart() {
+            // Costruisce punti equity nel tempo (cassa dopo ogni transazione)
+            if (!equityChart) {
+                equityChart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: [], datasets: [{
+                        label: 'Cassa (€)',
+                        data: [],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79,70,229,0.02)',
+                        tension: 0.2,
+                        fill: true,
+                        pointRadius: 2,
+                        pointHoverRadius: 6
+                    }] },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: { callbacks: { label: (ctx) => `€ ${ctx.raw.toFixed(2)}` } }
+                        },
+                        scales: { y: { beginAtZero: false } }
+                    }
+                });
+            }
+            
+            // Ordina cronologicamente
+            const sorted = [...transactions].sort((a,b)=> a.data_ora.localeCompare(b.data_ora));
+            let runningBalance = cassaIniziale;
+            const labels = ['Inizio'];
+            const dataPoints = [cassaIniziale];
+            
+            sorted.forEach((t, idx) => {
+                runningBalance += (t.profitto_netto || 0);
+                // Non includiamo prelievi/versamenti nel grafico dell'equity? La specifica dice "grafico pulito dal prelievo"
+                // meglio mostrare il NAV lordo senza flussi di cassa esterni.
+                labels.push(t.data_ora.slice(5,16)); 
+                dataPoints.push(runningBalance);
+            });
+            
+            equityChart.data.labels = labels;
+            equityChart.data.datasets[0].data = dataPoints;
+            equityChart.update();
+        }
+
+        // Persistenza localStorage
+        function saveToLocalStorage() {
+            const state = {
+                transactions,
+                cassaIniziale,
+                prelieviTotali,
+                versamentiTotali,
+                riskPercent
+            };
+            localStorage.setItem('betPortfolioState', JSON.stringify(state));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('betPortfolioState');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    transactions = state.transactions || [];
+                    cassaIniziale = state.cassaIniziale || 1000;
+                    prelieviTotali = state.prelieviTotali || 0;
+                    versamentiTotali = state.versamentiTotali || 0;
+                    riskPercent = state.riskPercent || 0.015;
+                } catch(e) { console.warn("Errore caricamento stato"); }
+            }
+            // Aggiorna UI elementi config
+            document.getElementById('cassa-iniziale-input').value = cassaIniziale;
+            document.getElementById('custom-risk').value = (riskPercent*100).toFixed(1);
+            updateRiskBadge();
+            renderAll();
+        }
+
+        function updateRiskBadge() {
+            const pct = (riskPercent*100).toFixed(1);
+            let label = `Personalizzato (${pct}%)`;
+            if (riskPercent === 0.01) label = 'Conservativo (1.0%)';
+            else if (riskPercent === 0.015) label = 'Bilanciato (1.5%)';
+            else if (riskPercent === 0.025) label = 'Aggressivo (2.5%)';
+            riskProfileBadge.textContent = label;
+        }
+
+        // Esporta CSV
+        function exportCSV() {
+            if (transactions.length === 0) { alert('Nessun dato da esportare'); return; }
+            let csv = "ID,Data,Tipo,Quota,StakeInput,StakeEuro,Esito,ProfittoNetto\n";
+            transactions.forEach(t => {
+                csv += `${t.id_operazione},${t.data_ora},${t.tipo_operazione},${t.quota},${t.stake_input},${t.stake_euro},${t.esito},${t.profitto_netto}\n`;
+            });
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `portfolio_export_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        // ---------- Event Listeners ----------
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            
+            // Slider stake
+            stakeSlider.addEventListener('input', () => {
+                stakeDisplay.textContent = stakeSlider.value + '/10';
+                updateStakePreview();
+            });
+            
+            quotaInput.addEventListener('input', updateStakePreview);
+            
+            // Bottone aggiungi
+            document.getElementById('add-operation-btn').addEventListener('click', () => {
+                const quota = parseFloat(quotaInput.value);
+                if (isNaN(quota) || quota < 1.0) { alert('Inserire quota valida ≥1.0'); return; }
+                const stakeInput = parseInt(stakeSlider.value);
+                const esito = esitoSelect.value;
+                const tipo = tipoSelect.value;
+                addTransaction(quota, stakeInput, esito, tipo);
+                // reset form parziale
+                quotaInput.value = '2.00';
+                esitoSelect.value = 'In Corso';
+                tipoSelect.value = 'Puntata';
+                stakeSlider.value = 3;
+                stakeDisplay.textContent = '3/10';
+                updateStakePreview();
+            });
+            
+            document.getElementById('clear-form-btn').addEventListener('click', ()=>{
+                quotaInput.value = '2.00';
+                stakeSlider.value = 3; stakeDisplay.textContent = '3/10';
+                esitoSelect.value = 'In Corso';
+                tipoSelect.value = 'Puntata';
+                updateStakePreview();
+            });
+            
+            // Profili rischio
+            document.querySelectorAll('.profile-btn').forEach(btn => {
+                btn.addEventListener('click', ()=>{
+                    const risk = parseFloat(btn.dataset.risk);
+                    riskPercent = risk;
+                    document.getElementById('custom-risk').value = (risk*100).toFixed(1);
+                    updateRiskBadge();
+                    updateStakePreview();
+                    saveToLocalStorage();
+                    renderKPI(); 
+                });
+            });
+            
+            document.getElementById('apply-risk').addEventListener('click', ()=>{
+                let val = parseFloat(document.getElementById('custom-risk').value);
+                if (!isNaN(val) && val>0) {
+                    riskPercent = val / 100;
+                    updateRiskBadge();
+                    updateStakePreview();
+                    saveToLocalStorage();
+                }
+            });
+            
+            // Cassa iniziale
+            document.getElementById('cassa-iniziale-input').addEventListener('change', (e)=>{
+                let val = parseFloat(e.target.value);
+                if (!isNaN(val) && val>=0) {
+                    cassaIniziale = val;
+                    saveToLocalStorage();
+                    renderAll();
+                }
+            });
+            
+            // Prelievo / versamento
+            function handleFlusso(moltiplicatore) {
+                const input = document.getElementById('flusso-input');
+                let val = parseFloat(input.value);
+                if (isNaN(val) || val<=0) { alert('Inserire importo positivo'); return; }
+                if (moltiplicatore === -1) { // prelievo
+                    prelieviTotali += val;
+                } else { // versamento
+                    versamentiTotali += val;
+                }
+                input.value = '0';
+                saveToLocalStorage();
+                renderAll();
+            }
+            document.getElementById('prelievo-btn').addEventListener('click', ()=> handleFlusso(-1));
+            document.getElementById('versamento-btn').addEventListener('click', ()=> handleFlusso(1));
+            
+            // Reset
+            document.getElementById('reset-all-btn').addEventListener('click', ()=>{
+                if(confirm('Cancellare TUTTE le operazioni e ripristinare i valori predefiniti?')) {
+                    transactions = [];
+                    cassaIniziale = 1000;
+                    prelieviTotali = 0;
+                    versamentiTotali = 0;
+                    riskPercent = 0.015;
+                    document.getElementById('cassa-iniziale-input').value = 1000;
+                    document.getElementById('custom-risk').value = '1.5';
+                    updateRiskBadge();
+                    saveToLocalStorage();
+                    renderAll();
+                }
+            });
+            
+            // Export
+            document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
+            
+            // Sincronizza badge iniziale
+            updateRiskBadge();
+        });
+
+        // Forza update quando cambia qualcosa (già dentro renderAll)
+        window.updateStakePreview = updateStakePreview;
+    })();
+</script>
+</body>
+</html>
