@@ -179,6 +179,18 @@
         .text-center { text-align: center; }
         .mt-4 { margin-top: 16px; }
         .mb-2 { margin-bottom: 8px; }
+        
+        /* Stile per il select di modifica esito nella tabella */
+        .esito-select {
+            padding: 6px 8px;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            width: auto;
+            min-width: 110px;
+        }
     </style>
 </head>
 <body>
@@ -510,19 +522,20 @@
         renderBookmakerStats();
     }
 
-    function editEsito(id) {
+    // NUOVA FUNZIONE: Cambia esito tramite select
+    function changeEsito(selectElement) {
+        const id = Number(selectElement.dataset.id);
+        const nuovoEsito = selectElement.value;
         const scommessa = scommesse.find(s => s.id === id);
-        if (!scommessa) return;
-        const esiti = ['pending','win','loss','halfWin','halfLoss','void','cashout'];
-        let idx = esiti.indexOf(scommessa.esito);
-        idx = (idx + 1) % esiti.length;
-        scommessa.esito = esiti[idx];
-        saveData();
-        updateDashboard();
-        renderTable();
-        updateChart();
-        renderSportStats();
-        renderBookmakerStats();
+        if (scommessa) {
+            scommessa.esito = nuovoEsito;
+            saveData();
+            updateDashboard();
+            renderTable();        // ridisegna la tabella (il select verrà ricreato con il nuovo selected)
+            updateChart();
+            renderSportStats();
+            renderBookmakerStats();
+        }
     }
 
     // ==================== RENDER TABELLA CON FILTRI ====================
@@ -571,7 +584,17 @@
                 <td>${s.tipologia}</td>
                 <td>${s.quota.toFixed(2)}</td>
                 <td>€${s.puntata.toFixed(2)}</td>
-                <td><button class="secondary small-btn" onclick="editEsito(${s.id})">${s.esito}</button></td>
+                <td>
+                    <select class="esito-select" data-id="${s.id}" onchange="changeEsito(this)">
+                        <option value="pending" ${s.esito === 'pending' ? 'selected' : ''}>In attesa</option>
+                        <option value="win" ${s.esito === 'win' ? 'selected' : ''}>Vinta</option>
+                        <option value="loss" ${s.esito === 'loss' ? 'selected' : ''}>Persa</option>
+                        <option value="halfWin" ${s.esito === 'halfWin' ? 'selected' : ''}>Half Win</option>
+                        <option value="halfLoss" ${s.esito === 'halfLoss' ? 'selected' : ''}>Half Loss</option>
+                        <option value="void" ${s.esito === 'void' ? 'selected' : ''}>Void</option>
+                        <option value="cashout" ${s.esito === 'cashout' ? 'selected' : ''}>Cashout</option>
+                    </select>
+                </td>
                 <td>${vincitaDisplay}</td>
                 <td class="${profClass}">${profittoDisplay}</td>
                 <td><button class="danger small-btn" onclick="deleteScommessa(${s.id})">🗑️</button></td>
