@@ -2,821 +2,810 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>BetTracker Pro · Tipster</title>
-    <!-- PWA ready -->
-    <link rel="manifest" href="data:application/manifest+json,{name:'BetTracker',short_name:'BetTracker',display:'standalone',background_color:'#0d1117',theme_color:'#58a6ff'}">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- Font & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Bet Tracker Pro • Completo</title>
+    <!-- Chart.js per i grafici -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0d1117;
-            color: #e6edf3;
-            padding: 16px 12px 80px;
-            min-height: 100vh;
-            -webkit-tap-highlight-color: transparent;
+            background: #f1f5f9;
+            padding: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        .app-container { max-width: 500px; margin: 0 auto; }
-        /* Header */
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .app-header h1 {
+        h1 {
+            font-size: 2rem;
             font-weight: 600;
-            font-size: 1.7rem;
-            letter-spacing: -0.02em;
-            color: #fff;
+            color: #0f172a;
+            margin-bottom: 8px;
         }
-        .bankroll-badge {
-            background: #161b22;
-            padding: 8px 16px;
-            border-radius: 40px;
-            border: 1px solid #30363d;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 600;
-        }
-        .bankroll-amount { color: #58a6ff; font-size: 1.3rem; }
-        /* Cards */
-        .card {
-            background: #161b22;
-            border-radius: 24px;
-            padding: 20px 16px;
-            margin-bottom: 18px;
-            border: 1px solid #30363d;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-        }
-        .card-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #8b949e;
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #1e293b;
             margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 8px;
         }
-        /* Forms */
-        .form-group { margin-bottom: 16px; }
-        .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        .form-field { flex: 1 1 calc(50% - 5px); }
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 12px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+        }
+        .grid-2col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .stat-box {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            border-left: 6px solid #3b82f6;
+        }
+        .form-group {
+            flex: 1 1 160px;
+            min-width: 140px;
+        }
         label {
             display: block;
-            font-size: 0.75rem;
-            color: #8b949e;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
             margin-bottom: 6px;
-            font-weight: 500;
         }
-        input, select, textarea {
+        input, select, button {
             width: 100%;
-            background: #0d1117;
-            border: 1.5px solid #30363d;
-            border-radius: 16px;
             padding: 12px 14px;
-            color: #e6edf3;
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            outline: none;
-        }
-        input:focus, select:focus { border-color: #58a6ff; }
-        /* Stake chips */
-        .stake-suggestions {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin: 18px 0 10px;
-        }
-        .stake-chip {
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 40px;
-            padding: 10px 5px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            background: white;
             transition: all 0.15s;
-            color: #c9d1d9;
         }
-        .stake-chip.active { background: #1f6feb; border-color: #58a6ff; color: white; }
-        .stake-chip small { display: block; font-weight: 400; font-size: 0.7rem; color: #8b949e; }
-        .stake-chip.active small { color: #c9d1d9; }
-        /* Buttons */
-        .btn {
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 40px;
-            padding: 14px 18px;
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        button {
+            background: #2563eb;
+            color: white;
             font-weight: 600;
-            color: #c9d1d9;
-            width: 100%;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.15s;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-primary { background: #238636; border-color: #2ea043; color: white; }
-        .btn-outline { background: transparent; }
-        .btn-small { padding: 8px 12px; font-size: 0.85rem; width: auto; }
-        /* Dashboard grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        .stat-item {
-            background: #0d1117;
-            border-radius: 18px;
-            padding: 14px 10px;
-            border: 1px solid #21262d;
-        }
-        .stat-label { font-size: 0.7rem; color: #8b949e; text-transform: uppercase; }
-        .stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
-        .stat-trend { font-size: 0.75rem; }
-        .positive { color: #3fb950; }
-        .negative { color: #f85149; }
-        /* Chart placeholder */
-        .chart-area {
-            height: 90px;
-            background: linear-gradient(90deg, #3fb950 0%, #3fb950 35%, #f85149 35%, #f85149 65%, #58a6ff 65%, #58a6ff 100%);
-            border-radius: 16px;
-            margin: 18px 0 12px;
-            opacity: 0.9;
-        }
-        /* Bet list */
-        .bet-item {
-            background: #0d1117;
-            border-radius: 18px;
-            padding: 16px;
-            margin-bottom: 8px;
-            border-left: 6px solid;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .bet-details { font-size: 0.9rem; }
-        .bet-amount { font-weight: 700; font-size: 1.1rem; }
-        .delete-btn {
-            background: none;
             border: none;
-            color: #f85149;
-            font-size: 1.2rem;
-            padding: 6px;
             cursor: pointer;
-            opacity: 0.7;
+            border: 1.5px solid #2563eb;
         }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button.secondary {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-color: #cbd5e1;
+        }
+        button.secondary:hover {
+            background: #e2e8f0;
+        }
+        button.danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+        button.danger:hover {
+            background: #fecaca;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        th {
+            text-align: left;
+            padding: 14px 8px;
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+        .profit-positive { color: #16a34a; font-weight: 700; }
+        .profit-negative { color: #dc2626; font-weight: 700; }
         .badge {
-            background: #21262d;
-            padding: 6px 14px;
+            display: inline-block;
+            padding: 4px 10px;
             border-radius: 30px;
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
+            background: #e2e8f0;
         }
-        .alert-banner {
-            background: #1f242b;
-            border-left: 6px solid #58a6ff;
-            padding: 14px 16px;
-            border-radius: 20px;
-            margin-bottom: 18px;
+        .kelly-box {
+            background: #eff6ff;
+            border-radius: 16px;
+            padding: 18px;
+            margin-top: 16px;
+            border: 1px solid #bfdbfe;
+        }
+        .filter-bar {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
         }
-        .progress-bar {
-            height: 8px;
-            background: #21262d;
-            border-radius: 10px;
-            flex: 1;
-        }
-        .progress-fill {
-            height: 8px;
-            background: #3fb950;
-            border-radius: 10px;
-            width: 0%;
-        }
-        .footer-note {
-            text-align: center;
-            color: #6e7681;
-            font-size: 0.75rem;
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
             margin-top: 20px;
         }
-        /* tabs */
-        .tab-bar {
+        .action-buttons {
             display: flex;
             gap: 8px;
-            margin-bottom: 16px;
+            flex-wrap: wrap;
         }
-        .tab {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 30px;
-            padding: 10px 16px;
-            font-weight: 500;
-            color: #8b949e;
-            flex: 1;
-            text-align: center;
-            cursor: pointer;
+        .small-btn {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            width: auto;
         }
-        .tab.active {
-            background: #1f6feb;
-            border-color: #58a6ff;
-            color: white;
-        }
-        .modal-overlay {
-            position: fixed;
-            top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-card {
-            background: #161b22;
-            border-radius: 28px;
-            padding: 24px;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid #30363d;
-        }
-        .hidden { display: none !important; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 16px; }
+        .mb-2 { margin-bottom: 8px; }
     </style>
 </head>
 <body>
-<div class="app-container">
-    <!-- Header Bankroll -->
-    <div class="app-header">
-        <h1>📈 BetTracker</h1>
-        <div class="bankroll-badge" id="bankrollHeader">
-            <i class="fas fa-coins" style="color:#58a6ff;"></i>
-            <span class="bankroll-amount" id="bankrollDisplay">€0.00</span>
-            <i class="fas fa-chevron-down" style="font-size:12px; margin-left:4px; opacity:0.7;" onclick="openBankrollModal()"></i>
+
+<h1>📊 Bet Tracker Pro</h1>
+<p style="color:#475569; margin-bottom:24px;">Gestione avanzata scommesse • Consigliere Kelly • Analisi complete</p>
+
+<!-- DASHBOARD PRINCIPALE -->
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>💰 Riepilogo Finanziario</h2>
+        <button class="secondary small-btn" onclick="editBankroll()">⚙️ Imposta Bankroll</button>
+    </div>
+    <div class="grid-2col">
+        <div class="stat-box">
+            <div style="font-size:0.9rem; color:#64748b;">Bankroll iniziale</div>
+            <div style="font-size:2rem; font-weight:700;" id="bankrollInitDisplay">€1,000.00</div>
+        </div>
+        <div class="stat-box">
+            <div style="font-size:0.9rem; color:#64748b;">Saldo attuale</div>
+            <div style="font-size:2rem; font-weight:700;" id="currentBalanceDisplay">€1,000.00</div>
+        </div>
+        <div class="stat-box">
+            <div style="font-size:0.9rem; color:#64748b;">Profitto netto</div>
+            <div style="font-size:2rem; font-weight:700;" id="netProfitDisplay">€0.00</div>
+        </div>
+        <div class="stat-box">
+            <div style="font-size:0.9rem; color:#64748b;">ROI / Yield</div>
+            <div style="font-size:2rem; font-weight:700;" id="roiDisplay">0.00%</div>
         </div>
     </div>
-
-    <!-- Alert contestuale -->
-    <div class="alert-banner" id="alertBanner">
-        <i class="fas fa-chart-line" style="color:#58a6ff;"></i>
-        <span id="alertText">Caricamento dati...</span>
-    </div>
-
-    <!-- Tabs principali -->
-    <div class="tab-bar">
-        <div class="tab active" data-tab="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</div>
-        <div class="tab" data-tab="add"><i class="fas fa-plus-circle"></i> Nuova</div>
-        <div class="tab" data-tab="history"><i class="fas fa-list"></i> Storico</div>
-        <div class="tab" data-tab="growth"><i class="fas fa-rocket"></i> Crescita</div>
-    </div>
-
-    <!-- Pannello DASHBOARD -->
-    <div id="panel-dashboard">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-tachometer-alt"></i> Riepilogo</div>
-            <div class="stats-grid" id="dashboardStats"></div>
-            <div class="chart-area" id="miniChart"></div>
-            <div style="display:flex; justify-content: space-between; margin-top: 10px;">
-                <span class="badge"><i class="fas fa-arrow-up positive"></i> Serie: <span id="currentStreak">0</span></span>
-                <span class="badge"><i class="fas fa-trophy"></i> Max +<span id="maxPosStreak">0</span></span>
-                <span class="badge"><i class="fas fa-arrow-down negative"></i> Max -<span id="maxNegStreak">0</span></span>
-            </div>
-        </div>
-
-        <!-- Statistiche avanzate per fascia quota -->
-        <div class="card">
-            <div class="card-title"><i class="fas fa-layer-group"></i> Performance per quota</div>
-            <div id="oddsBreakdown"></div>
-            <div style="margin-top: 16px; display:flex; justify-content: space-between;">
-                <span>⚖️ Media quota vinte: <span id="avgWinOdds">-</span></span>
-                <span>📉 Media quota perse: <span id="avgLossOdds">-</span></span>
-            </div>
-        </div>
-
-        <!-- Statistiche ultimi 7 giorni -->
-        <div class="card">
-            <div class="card-title"><i class="fas fa-calendar-week"></i> Ultimi 7 giorni</div>
-            <div id="last7daysStats"></div>
-        </div>
-    </div>
-
-    <!-- Pannello NUOVA GIOCATA -->
-    <div id="panel-add" class="hidden">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-pen"></i> Inserisci giocata</div>
-            <div class="form-group">
-                <label>Data</label>
-                <input type="date" id="betDate">
-            </div>
-            <div class="form-group">
-                <label>Selezione</label>
-                <input type="text" id="betSelection" placeholder="Es. Inter - Milan Over 2.5">
-            </div>
-            <div class="form-row">
-                <div class="form-field">
-                    <label>Quota</label>
-                    <input type="number" step="0.01" id="betOdds" placeholder="2.10" value="1.95">
-                </div>
-                <div class="form-field">
-                    <label>Puntata (€)</label>
-                    <input type="number" step="0.01" id="betStake" placeholder="0.00">
-                </div>
-            </div>
-            <!-- Suggerimenti stake -->
-            <div class="stake-suggestions" id="stakeSuggestions"></div>
-            <div class="form-row">
-                <div class="form-field">
-                    <label>Esito</label>
-                    <select id="betOutcome">
-                        <option value="win">✅ Vinto</option>
-                        <option value="loss">❌ Perso</option>
-                        <option value="void">⏸️ Void</option>
-                    </select>
-                </div>
-                <div class="form-field">
-                    <label>Note</label>
-                    <input type="text" id="betNotes" placeholder="Opzionale">
-                </div>
-            </div>
-            <button class="btn btn-primary" id="saveBetBtn"><i class="fas fa-save"></i> Registra giocata</button>
-        </div>
-    </div>
-
-    <!-- Pannello STORICO -->
-    <div id="panel-history" class="hidden">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-history"></i> Tutte le giocate 
-                <span style="margin-left:auto; font-size:0.8rem;"><i class="fas fa-trash-alt"></i> Elimina singola</span>
-            </div>
-            <div id="historyListContainer"></div>
-            <button class="btn btn-outline" id="exportDataBtn" style="margin-top:16px;"><i class="fas fa-download"></i> Esporta backup (JSON)</button>
-            <button class="btn btn-outline" id="importDataBtn"><i class="fas fa-upload"></i> Importa backup</button>
-            <input type="file" id="importFileInput" accept=".json,application/json" style="display:none;">
-        </div>
-    </div>
-
-    <!-- Pannello CRESCITA & PROIEZIONI -->
-    <div id="panel-growth" class="hidden">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-chart-line"></i> Strategia a livelli</div>
-            <div id="milestoneProgress"></div>
-        </div>
-        <div class="card">
-            <div class="card-title"><i class="fas fa-calendar-alt"></i> Proiezione futura</div>
-            <div id="projectionStats"></div>
-            <div style="margin-top: 16px; background:#0d1117; border-radius: 20px; padding: 16px;">
-                <div style="display:flex; justify-content: space-between; margin-bottom:8px;"><span>+30 giorni</span> <span class="positive" id="proj30">€0</span></div>
-                <div style="display:flex; justify-content: space-between; margin-bottom:8px;"><span>+60 giorni</span> <span class="positive" id="proj60">€0</span></div>
-                <div style="display:flex; justify-content: space-between; margin-bottom:8px;"><span>+90 giorni</span> <span class="positive" id="proj90">€0</span></div>
-                <div style="display:flex; justify-content: space-between;"><span>+180 giorni</span> <span class="positive" id="proj180">€0</span></div>
-            </div>
-            <div class="alert-banner" style="margin-top:16px;">
-                <i class="fas fa-lightbulb"></i> <span id="growthAdvice">Calcolo in corso...</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal impostazione bankroll iniziale -->
-    <div class="modal-overlay hidden" id="bankrollModal">
-        <div class="modal-card">
-            <h3 style="margin-bottom:20px;">💶 Imposta Bankroll</h3>
-            <label>Bankroll iniziale (€)</label>
-            <input type="number" step="0.01" id="initialBankrollInput" style="margin-bottom:20px;" value="1000">
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-primary" id="saveBankrollBtn">Salva</button>
-                <button class="btn btn-outline" onclick="closeBankrollModal()">Annulla</button>
-            </div>
-            <p style="font-size:0.75rem; margin-top:12px; color:#8b949e;">Il bankroll si aggiornerà con le giocate.</p>
-        </div>
-    </div>
-
-    <div class="footer-note">
-        ⚡ BetTracker Pro · Offline-first · Dati salvati in locale
+    <div style="display:flex; gap:30px; margin-top:20px; flex-wrap:wrap;">
+        <div><span style="color:#64748b;">Totale puntato:</span> <strong id="totalStaked">€0.00</strong></div>
+        <div><span style="color:#64748b;">Totale vinto:</span> <strong id="totalWon">€0.00</strong></div>
+        <div><span style="color:#64748b;">Scommesse:</span> <strong id="totalBets">0</strong> (Vinte: <span id="winCount">0</span>, Perse: <span id="lossCount">0</span>)</div>
     </div>
 </div>
 
+<!-- CONSIGLIERE KELLY -->
+<div class="card">
+    <h2>🧠 Consigliere di Puntata (Kelly Frazionario)</h2>
+    <div class="flex-row">
+        <div class="form-group">
+            <label>Quota (decimale)</label>
+            <input type="number" id="kQuota" step="0.01" min="1.01" value="2.00">
+        </div>
+        <div class="form-group">
+            <label>Tua probabilità (%)</label>
+            <input type="number" id="kProb" step="0.1" min="0.1" max="99.9" value="55">
+        </div>
+        <div class="form-group">
+            <label>Frazione Kelly (0.1-1.0)</label>
+            <input type="number" id="kFraction" step="0.1" min="0.1" max="1.0" value="0.25">
+        </div>
+        <div class="form-group">
+            <button onclick="calculateKelly()">📈 Calcola puntata consigliata</button>
+        </div>
+    </div>
+    <div id="kellyResult" class="kelly-box">
+        Inserisci i parametri per ottenere il suggerimento.
+    </div>
+</div>
+
+<!-- FORM INSERIMENTO SCOMMESSA -->
+<div class="card">
+    <h2>➕ Nuova Scommessa</h2>
+    <div class="flex-row">
+        <div class="form-group">
+            <label>Evento</label>
+            <input type="text" id="evento" placeholder="Es. Inter - Milan" value="">
+        </div>
+        <div class="form-group">
+            <label>Data</label>
+            <input type="date" id="dataScommessa">
+        </div>
+        <div class="form-group">
+            <label>Sport</label>
+            <select id="sport">
+                <option value="Calcio">Calcio</option><option value="Tennis">Tennis</option><option value="Basket">Basket</option>
+                <option value="Volley">Volley</option><option value="Hockey">Hockey</option><option value="Altro">Altro</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Bookmaker</label>
+            <select id="bookmaker">
+                <option value="Bet365">Bet365</option><option value="Sisal">Sisal</option><option value="Snai">Snai</option>
+                <option value="Goldbet">Goldbet</option><option value="Altro">Altro</option>
+            </select>
+        </div>
+    </div>
+    <div class="flex-row">
+        <div class="form-group">
+            <label>Tipologia</label>
+            <select id="tipologia">
+                <option value="Singola">Singola</option><option value="Multipla">Multipla</option><option value="Sistema">Sistema</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Quota @</label>
+            <input type="number" id="quota" step="0.01" min="1.01" value="2.00">
+        </div>
+        <div class="form-group">
+            <label>Puntata (€)</label>
+            <input type="number" id="puntata" step="0.5" min="0.5" value="10.00">
+        </div>
+        <div class="form-group">
+            <label>Esito</label>
+            <select id="esito">
+                <option value="pending">In attesa</option><option value="win">Vinta</option><option value="loss">Persa</option>
+                <option value="halfWin">Half Win</option><option value="halfLoss">Half Loss</option>
+                <option value="void">Void</option><option value="cashout">Cashout</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Note</label>
+            <input type="text" id="note" placeholder="Opzionale">
+        </div>
+        <div class="form-group">
+            <button onclick="addScommessa()" style="margin-top:24px;">✅ Aggiungi</button>
+        </div>
+    </div>
+</div>
+
+<!-- FILTRI E STORICO -->
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+        <h2>📋 Storico Scommesse</h2>
+        <div class="action-buttons">
+            <button class="secondary small-btn" onclick="exportToCSV()">📥 Esporta CSV</button>
+            <button class="secondary small-btn" onclick="exportBackup()">💾 Backup JSON</button>
+            <button class="secondary small-btn" onclick="importBackup()">📂 Importa Backup</button>
+            <button class="danger small-btn" onclick="clearAllData()">🗑️ Cancella tutto</button>
+        </div>
+    </div>
+    
+    <!-- Filtri -->
+    <div class="filter-bar">
+        <select id="filterEsito" onchange="renderTable()" style="width:auto;">
+            <option value="all">Tutti gli esiti</option>
+            <option value="pending">In attesa</option><option value="win">Vinte</option><option value="loss">Perse</option>
+            <option value="halfWin">Half Win</option><option value="halfLoss">Half Loss</option><option value="void">Void</option>
+        </select>
+        <select id="filterSport" onchange="renderTable()" style="width:auto;">
+            <option value="all">Tutti gli sport</option>
+        </select>
+        <select id="filterBookmaker" onchange="renderTable()" style="width:auto;">
+            <option value="all">Tutti i bookmaker</option>
+        </select>
+        <input type="text" id="searchEvento" placeholder="Cerca evento..." onkeyup="renderTable()" style="width:200px;">
+        <button class="secondary small-btn" onclick="resetFilters()">🔄 Reset filtri</button>
+    </div>
+    
+    <div style="overflow-x:auto;">
+        <table id="scommesseTable">
+            <thead>
+                <tr>
+                    <th>Data</th><th>Evento</th><th>Sport</th><th>Book</th><th>Tipo</th><th>Quota</th><th>Puntata</th>
+                    <th>Esito</th><th>Vincita</th><th>Profitto</th><th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- STATISTICHE AVANZATE E GRAFICO -->
+<div class="grid-2col">
+    <div class="card">
+        <h2>📈 Andamento Bankroll</h2>
+        <div class="chart-container">
+            <canvas id="balanceChart"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <h2>🏅 Analisi per Sport</h2>
+        <div id="sportStats" style="max-height:250px; overflow-y:auto;"></div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>🏦 Analisi per Bookmaker</h2>
+    <div id="bookmakerStats" style="max-height:200px; overflow-y:auto;"></div>
+</div>
+
 <script>
-    (function(){
-        "use strict";
+    // ==================== DATI GLOBALI ====================
+    let bankrollIniziale = 1000.0;
+    let scommesse = [];
+    let chartInstance = null;
 
-        // ---------- DATABASE LOCALE (localStorage) ----------
-        const STORAGE_KEY = 'betTrackerData';
-        let bankroll = 1000.00;
-        let bets = [];  // array di oggetti bet
+    // ==================== INIZIALIZZAZIONE ====================
+    function initApp() {
+        // Imposta data odierna come default
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dataScommessa').value = today;
+        
+        loadData();
+        populateFilterOptions();
+        updateDashboard();
+        renderTable();
+        updateChart();
+        renderSportStats();
+        renderBookmakerStats();
+    }
 
-        // Caricamento iniziale
-        function loadData() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    bankroll = data.bankroll || 1000;
-                    bets = data.bets || [];
-                } catch(e){ console.warn("Errore caricamento, reset"); resetData(); }
-            } else {
-                // dati demo iniziali
-                bankroll = 1250.00;
-                bets = [
-                    { id: Date.now()+1, date:'2026-04-16', selection:'Milan - Napoli 1', odds:1.85, stake:80, outcome:'win', profit:68.00, notes:'' },
-                    { id: Date.now()+2, date:'2026-04-15', selection:'Real Madrid - Barcellona Over 2.5', odds:1.95, stake:70, outcome:'loss', profit:-70.00, notes:'' },
-                    { id: Date.now()+3, date:'2026-04-14', selection:'Juventus - Roma 1X', odds:2.10, stake:75, outcome:'win', profit:82.50, notes:'' },
-                    { id: Date.now()+4, date:'2026-04-13', selection:'Inter - Lazio GG', odds:1.72, stake:100, outcome:'win', profit:72.00, notes:'' },
-                ];
-            }
+    function loadData() {
+        const savedBankroll = localStorage.getItem('bankrollIniziale');
+        if (savedBankroll) bankrollIniziale = parseFloat(savedBankroll);
+        
+        const savedScommesse = localStorage.getItem('scommesse');
+        if (savedScommesse) {
+            scommesse = JSON.parse(savedScommesse);
+            // Converti date string in oggetti Date
+            scommesse.forEach(s => s.data = new Date(s.data));
         }
-        function saveData() {
-            const data = { bankroll, bets };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
-        function resetData() {
-            bankroll = 1000;
-            bets = [];
-            saveData();
-        }
+    }
 
-        // Aggiorna UI globale
-        function refreshAllUI() {
-            updateBankrollDisplay();
-            updateAlert();
-            renderDashboard();
-            renderStakeSuggestions();
-            renderHistory();
-            renderOddsBreakdown();
-            renderLast7Days();
-            renderMilestonesAndProjections();
-        }
+    function saveData() {
+        localStorage.setItem('bankrollIniziale', bankrollIniziale);
+        localStorage.setItem('scommesse', JSON.stringify(scommesse));
+    }
 
-        // Bankroll display
-        function updateBankrollDisplay() {
-            document.getElementById('bankrollDisplay').innerText = '€' + bankroll.toFixed(2);
-        }
-
-        // Alert contestuale
-        function updateAlert() {
-            const total = bets.length;
-            const wins = bets.filter(b=>b.outcome==='win').length;
-            const losses = bets.filter(b=>b.outcome==='loss').length;
-            const profit = bets.reduce((acc,b)=>acc+(b.profit||0),0);
-            const roi = bankroll > 0 ? (profit / (bankroll - profit + 0.01))*100 : 0; // approx
-            const streak = calculateCurrentStreak();
-            let msg = '';
-            if (total===0) msg = '👋 Inserisci la prima giocata per iniziare.';
-            else if (streak > 2) msg = `🔥 Serie positiva di ${streak} · ROI ${roi.toFixed(1)}% · Ottimo momento.`;
-            else if (streak < -2) msg = `⚠️ Serie negativa di ${Math.abs(streak)} · Mantieni disciplina e segui il piano.`;
-            else msg = `📊 Win rate ${(wins/total*100).toFixed(1)}% · Bankroll ${bankroll.toFixed(0)}€`;
-            document.getElementById('alertText').innerText = msg;
-        }
-
-        // Calcolo streak corrente
-        function calculateCurrentStreak() {
-            if (bets.length===0) return 0;
-            const sorted = [...bets].sort((a,b)=> new Date(b.date) - new Date(a.date));
-            let streak = 0;
-            for (let b of sorted) {
-                if (b.outcome === 'win') streak++;
-                else if (b.outcome === 'loss') { streak = -1; break; }
-                else if (b.outcome === 'void') continue;
-                else break;
-            }
-            return streak;
-        }
-
-        // Calcolo max streak
-        function calculateMaxStreaks() {
-            let maxPos = 0, maxNeg = 0, currentPos = 0, currentNeg = 0;
-            const sorted = [...bets].sort((a,b)=> new Date(a.date) - new Date(b.date));
-            for (let b of sorted) {
-                if (b.outcome === 'win') { currentPos++; currentNeg = 0; if (currentPos>maxPos) maxPos=currentPos; }
-                else if (b.outcome === 'loss') { currentNeg++; currentPos = 0; if (currentNeg>maxNeg) maxNeg=currentNeg; }
-                else { /* void non interrompe */ }
-            }
-            return { maxPos, maxNeg };
-        }
-
-        // Dashboard
-        function renderDashboard() {
-            const total = bets.length;
-            const wins = bets.filter(b=>b.outcome==='win').length;
-            const losses = bets.filter(b=>b.outcome==='loss').length;
-            const winRate = total ? (wins/total*100) : 0;
-            const totalProfit = bets.reduce((acc,b)=>acc+(b.profit||0),0);
-            const totalStaked = bets.reduce((acc,b)=>acc+b.stake,0);
-            const yieldVal = totalStaked ? (totalProfit/totalStaked*100) : 0;
-            const avgOdds = total ? (bets.reduce((acc,b)=>acc+b.odds,0)/total).toFixed(2) : '-';
-            const avgStake = total ? (totalStaked/total).toFixed(2) : '-';
-            const growth = bankroll > 0 ? ((bankroll - 1000)/1000*100) : 0;
-            const streaks = calculateMaxStreaks();
-
-            document.getElementById('dashboardStats').innerHTML = `
-                <div class="stat-item"><span class="stat-label">Giocate</span><span class="stat-value">${total}</span></div>
-                <div class="stat-item"><span class="stat-label">V/P</span><span class="stat-value">${wins}/${losses}</span></div>
-                <div class="stat-item"><span class="stat-label">Win Rate</span><span class="stat-value">${winRate.toFixed(1)}%</span></div>
-                <div class="stat-item"><span class="stat-label">ROI</span><span class="stat-value ${totalProfit>=0?'positive':'negative'}">${((totalProfit/bankroll)*100).toFixed(1)}%</span></div>
-                <div class="stat-item"><span class="stat-label">Yield</span><span class="stat-value ${totalProfit>=0?'positive':'negative'}">${yieldVal.toFixed(1)}%</span></div>
-                <div class="stat-item"><span class="stat-label">Profitto</span><span class="stat-value ${totalProfit>=0?'positive':'negative'}">€${totalProfit.toFixed(2)}</span></div>
-                <div class="stat-item"><span class="stat-label">Crescita</span><span class="stat-value ${growth>=0?'positive':'negative'}">${growth.toFixed(1)}%</span></div>
-                <div class="stat-item"><span class="stat-label">Media quota</span><span class="stat-value">${avgOdds}</span></div>
-            `;
-            document.getElementById('currentStreak').innerText = calculateCurrentStreak();
-            document.getElementById('maxPosStreak').innerText = streaks.maxPos;
-            document.getElementById('maxNegStreak').innerText = streaks.maxNeg;
-        }
-
-        // Stake suggestions (aggiornato in tempo reale)
-        function calculateStakes(odds, bank, winRateSim = 0.55) {
-            if (!odds || odds <= 1.0) odds = 1.8;
-            const b = odds - 1;
-            // modulato
-            let modPerc = 0.05;
-            if (odds < 1.80) modPerc = 0.055;
-            else if (odds < 2.10) modPerc = 0.05;
-            else if (odds < 2.50) modPerc = 0.045;
-            else if (odds < 3.00) modPerc = 0.035;
-            else modPerc = 0.025;
-            const modulated = bank * modPerc;
-            // Half Kelly (con win rate storico reale)
-            const winCount = bets.filter(b=>b.outcome==='win').length;
-            const total = bets.length;
-            const realWinRate = total > 0 ? winCount/total : winRateSim;
-            const p = realWinRate;
-            const q = 1 - p;
-            let kelly = 0;
-            if (b > 0) kelly = (b * p - q) / b;
-            const halfKellyPerc = Math.max(0, Math.min(0.15, kelly/2));
-            const halfKelly = bank * halfKellyPerc;
-            const flat6 = bank * 0.06;
-            const flat4 = bank * 0.04;
-            return { modulated, halfKelly, flat6, flat4 };
-        }
-
-        function renderStakeSuggestions() {
-            const oddsInput = document.getElementById('betOdds');
-            let odds = parseFloat(oddsInput.value);
-            if (isNaN(odds) || odds<1.01) odds = 1.95;
-            const stakes = calculateStakes(odds, bankroll);
-            const container = document.getElementById('stakeSuggestions');
-            container.innerHTML = `
-                <div class="stake-chip" data-stake="${stakes.modulated.toFixed(2)}">⚡ Modulato<br><small>${(stakes.modulated/bankroll*100).toFixed(1)}% · €${stakes.modulated.toFixed(2)}</small></div>
-                <div class="stake-chip" data-stake="${stakes.halfKelly.toFixed(2)}">📊 Half Kelly<br><small>${(stakes.halfKelly/bankroll*100).toFixed(1)}% · €${stakes.halfKelly.toFixed(2)}</small></div>
-                <div class="stake-chip" data-stake="${stakes.flat6.toFixed(2)}">🎯 Flat 6%<br><small>€${stakes.flat6.toFixed(2)}</small></div>
-                <div class="stake-chip" data-stake="${stakes.flat4.toFixed(2)}">🛡️ Sicuro 4%<br><small>€${stakes.flat4.toFixed(2)}</small></div>
-            `;
-            document.querySelectorAll('.stake-chip').forEach(chip => {
-                chip.addEventListener('click', function() {
-                    document.getElementById('betStake').value = this.dataset.stake;
-                    document.querySelectorAll('.stake-chip').forEach(c=>c.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-        }
-
-        // Render storico
-        function renderHistory() {
-            const container = document.getElementById('historyListContainer');
-            if (bets.length === 0) {
-                container.innerHTML = '<div style="padding:20px; text-align:center; color:#8b949e;">Nessuna giocata</div>';
-                return;
-            }
-            const sorted = [...bets].sort((a,b)=> new Date(b.date) - new Date(a.date));
-            let html = '';
-            sorted.forEach(bet => {
-                const outcomeClass = bet.outcome==='win'?'positive':(bet.outcome==='loss'?'negative':'');
-                html += `<div class="bet-item" style="border-left-color: ${bet.outcome==='win'?'#3fb950':(bet.outcome==='loss'?'#f85149':'#8b949e')};">
-                    <div class="bet-details">
-                        <div><strong>${bet.selection}</strong> · quota ${bet.odds}</div>
-                        <div style="font-size:0.75rem; color:#8b949e;">${bet.date} · €${bet.stake.toFixed(2)} ${bet.notes?'· '+bet.notes:''}</div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <span class="bet-amount ${outcomeClass}">${bet.outcome==='win'?'+':''}€${bet.profit.toFixed(2)}</span>
-                        <button class="delete-btn" data-id="${bet.id}"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>`;
-            });
-            container.innerHTML = html;
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const id = Number(btn.dataset.id);
-                    deleteBetById(id);
-                });
-            });
-        }
-
-        function deleteBetById(id) {
-            const betIndex = bets.findIndex(b => b.id === id);
-            if (betIndex === -1) return;
-            const bet = bets[betIndex];
-            // revert bankroll
-            bankroll -= bet.profit;
-            bets.splice(betIndex, 1);
-            saveData();
-            refreshAllUI();
-        }
-
-        // Breakdown quote
-        function renderOddsBreakdown() {
-            const ranges = [{min:1.5,max:1.79},{min:1.8,max:2.09},{min:2.1,max:2.49},{min:2.5,max:2.99},{min:3.0,max:99}];
-            let html = '';
-            ranges.forEach(r => {
-                const filtered = bets.filter(b => b.odds >= r.min && b.odds <= r.max);
-                const count = filtered.length;
-                const won = filtered.filter(b=>b.outcome==='win').length;
-                const profit = filtered.reduce((acc,b)=>acc+(b.profit||0),0);
-                html += `<div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>${r.min.toFixed(2)}-${r.max===99?'+':r.max.toFixed(2)}</span><span>${count} bet · W${won} <span class="${profit>=0?'positive':'negative'}">€${profit.toFixed(2)}</span></span></div>`;
-            });
-            document.getElementById('oddsBreakdown').innerHTML = html;
-
-            const winOdds = bets.filter(b=>b.outcome==='win').map(b=>b.odds);
-            const lossOdds = bets.filter(b=>b.outcome==='loss').map(b=>b.odds);
-            document.getElementById('avgWinOdds').innerText = winOdds.length ? (winOdds.reduce((a,b)=>a+b,0)/winOdds.length).toFixed(2) : '-';
-            document.getElementById('avgLossOdds').innerText = lossOdds.length ? (lossOdds.reduce((a,b)=>a+b,0)/lossOdds.length).toFixed(2) : '-';
-        }
-
-        // Ultimi 7 giorni
-        function renderLast7Days() {
-            const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate()-7);
-            const recent = bets.filter(b => new Date(b.date) >= sevenDaysAgo);
-            const count = recent.length;
-            const wins = recent.filter(b=>b.outcome==='win').length;
-            const profit = recent.reduce((acc,b)=>acc+(b.profit||0),0);
-            const avgStake = count ? (recent.reduce((acc,b)=>acc+b.stake,0)/count).toFixed(2) : '0';
-            document.getElementById('last7daysStats').innerHTML = `
-                <div style="display:flex; justify-content:space-between;"><span>Giocate:</span><span>${count}</span></div>
-                <div style="display:flex; justify-content:space-between;"><span>Vinte/Perse:</span><span>${wins}/${count-wins}</span></div>
-                <div style="display:flex; justify-content:space-between;"><span>Profitto:</span><span class="${profit>=0?'positive':'negative'}">€${profit.toFixed(2)}</span></div>
-                <div style="display:flex; justify-content:space-between;"><span>Puntata media:</span><span>€${avgStake}</span></div>
-            `;
-        }
-
-        // Milestones e proiezioni
-        function renderMilestonesAndProjections() {
-            const thresholds = [100,150,200,300,500,750,1000];
-            let html = '';
-            thresholds.forEach(t => {
-                const reached = bankroll >= t;
-                html += `<div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                    <span style="min-width:50px;">€${t}</span>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${reached?100:0}%;"></div></div>
-                    <span>${reached?'✅':'⏳'}</span>
-                </div>`;
-            });
-            document.getElementById('milestoneProgress').innerHTML = html;
-
-            // Proiezioni basate su profitto medio giornaliero reale
-            const totalProfit = bets.reduce((acc,b)=>acc+(b.profit||0),0);
-            const dates = bets.map(b => new Date(b.date).getTime());
-            if (dates.length < 2) {
-                document.getElementById('proj30').innerText = '€' + bankroll.toFixed(2);
-                return;
-            }
-            const minDate = Math.min(...dates);
-            const maxDate = Math.max(...dates);
-            const daysDiff = Math.max(1, Math.ceil((maxDate - minDate) / (1000*60*60*24)));
-            const avgDailyProfit = totalProfit / daysDiff;
-            const proj30 = bankroll + avgDailyProfit * 30;
-            const proj60 = bankroll + avgDailyProfit * 60;
-            const proj90 = bankroll + avgDailyProfit * 90;
-            const proj180 = bankroll + avgDailyProfit * 180;
-            document.getElementById('proj30').innerText = '€' + proj30.toFixed(2);
-            document.getElementById('proj60').innerText = '€' + proj60.toFixed(2);
-            document.getElementById('proj90').innerText = '€' + proj90.toFixed(2);
-            document.getElementById('proj180').innerText = '€' + proj180.toFixed(2);
-
-            const roi = totalProfit / (bankroll - totalProfit + 0.01) * 100;
-            document.getElementById('growthAdvice').innerText = `ROI ${roi.toFixed(1)}% · Profitto medio/giorno €${avgDailyProfit.toFixed(2)} · Continua con la strategia.`;
-        }
-
-        // Salvataggio nuova giocata
-        function addNewBet() {
-            const date = document.getElementById('betDate').value || new Date().toISOString().slice(0,10);
-            const selection = document.getElementById('betSelection').value.trim();
-            if (!selection) { alert('Inserisci una selezione'); return; }
-            const odds = parseFloat(document.getElementById('betOdds').value);
-            const stake = parseFloat(document.getElementById('betStake').value);
-            if (!odds || odds<1.01 || !stake || stake<=0) { alert('Quota e puntata non validi'); return; }
-            const outcome = document.getElementById('betOutcome').value;
-            const notes = document.getElementById('betNotes').value;
-            let profit = 0;
-            if (outcome === 'win') profit = stake * odds - stake;
-            else if (outcome === 'loss') profit = -stake;
+    // ==================== FUNZIONI DI CALCOLO ====================
+    function calcolaStatistiche(filtra = false) {
+        let totalePuntato = 0, totaleVinto = 0, profittoNetto = 0;
+        let winCount = 0, lossCount = 0, pendingCount = 0;
+        
+        scommesse.forEach(s => {
+            if (s.esito === 'pending') { pendingCount++; return; }
+            totalePuntato += s.puntata;
             
-            const newBet = {
-                id: Date.now() + Math.floor(Math.random()*1000),
-                date, selection, odds, stake, outcome, profit, notes
-            };
-            bets.push(newBet);
-            bankroll += profit;
-            saveData();
-            // reset form
-            document.getElementById('betSelection').value = '';
-            document.getElementById('betStake').value = '';
-            document.getElementById('betNotes').value = '';
-            refreshAllUI();
-            // switch to dashboard
-            document.querySelector('[data-tab="dashboard"]').click();
-        }
+            let vincita = 0;
+            if (s.esito === 'win') {
+                vincita = s.puntata * s.quota;
+                winCount++;
+            } else if (s.esito === 'halfWin') {
+                vincita = s.puntata + (s.puntata * (s.quota - 1) / 2);
+                winCount++;
+            } else if (s.esito === 'halfLoss') {
+                vincita = s.puntata / 2;
+                lossCount++;
+            } else if (s.esito === 'loss') {
+                vincita = 0;
+                lossCount++;
+            } else if (s.esito === 'void') {
+                vincita = s.puntata; // rimborso
+            } else if (s.esito === 'cashout') {
+                // cashout va gestito a parte: l'utente dovrebbe inserire la vincita effettiva
+                vincita = s.cashoutAmount || s.puntata;
+            }
+            
+            totaleVinto += vincita;
+            profittoNetto += (vincita - s.puntata);
+        });
+        
+        const bankrollAttuale = bankrollIniziale + profittoNetto;
+        const roi = totalePuntato > 0 ? (profittoNetto / totalePuntato) * 100 : 0;
+        const yieldVal = roi; // sinonimo
+        
+        return {
+            bankrollAttuale, profittoNetto, roi, yieldVal, totalePuntato, totaleVinto,
+            totaleScommesse: scommesse.length, winCount, lossCount, pendingCount
+        };
+    }
 
-        // Gestione Tabs
-        function setupTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            const panels = {
-                dashboard: document.getElementById('panel-dashboard'),
-                add: document.getElementById('panel-add'),
-                history: document.getElementById('panel-history'),
-                growth: document.getElementById('panel-growth')
-            };
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const target = tab.dataset.tab;
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    Object.values(panels).forEach(p => p.classList.add('hidden'));
-                    panels[target].classList.remove('hidden');
-                    if (target === 'add') {
-                        document.getElementById('betDate').value = new Date().toISOString().slice(0,10);
-                        renderStakeSuggestions();
-                    }
-                    if (target === 'history') renderHistory();
-                    if (target === 'growth') renderMilestonesAndProjections();
-                });
-            });
-        }
+    function updateDashboard() {
+        const stats = calcolaStatistiche();
+        document.getElementById('bankrollInitDisplay').textContent = `€${bankrollIniziale.toFixed(2)}`;
+        document.getElementById('currentBalanceDisplay').textContent = `€${stats.bankrollAttuale.toFixed(2)}`;
+        document.getElementById('netProfitDisplay').textContent = `€${stats.profittoNetto.toFixed(2)}`;
+        document.getElementById('roiDisplay').textContent = `${stats.roi.toFixed(2)}%`;
+        document.getElementById('totalStaked').textContent = `€${stats.totalePuntato.toFixed(2)}`;
+        document.getElementById('totalWon').textContent = `€${stats.totaleVinto.toFixed(2)}`;
+        document.getElementById('totalBets').textContent = stats.totaleScommesse;
+        document.getElementById('winCount').textContent = stats.winCount;
+        document.getElementById('lossCount').textContent = stats.lossCount;
+    }
 
-        // Modal Bankroll
-        function openBankrollModal() { document.getElementById('bankrollModal').classList.remove('hidden'); }
-        function closeBankrollModal() { document.getElementById('bankrollModal').classList.add('hidden'); }
-        document.getElementById('saveBankrollBtn').addEventListener('click', ()=>{
-            const newBR = parseFloat(document.getElementById('initialBankrollInput').value);
-            if (!isNaN(newBR) && newBR>0) {
-                bankroll = newBR;
-                saveData();
-                refreshAllUI();
-                closeBankrollModal();
+    // ==================== GESTIONE SCOMMESSE ====================
+    function addScommessa() {
+        const evento = document.getElementById('evento').value.trim();
+        const data = document.getElementById('dataScommessa').value;
+        const sport = document.getElementById('sport').value;
+        const bookmaker = document.getElementById('bookmaker').value;
+        const tipologia = document.getElementById('tipologia').value;
+        const quota = parseFloat(document.getElementById('quota').value);
+        const puntata = parseFloat(document.getElementById('puntata').value);
+        const esito = document.getElementById('esito').value;
+        const note = document.getElementById('note').value;
+        
+        if (!evento || !data || isNaN(quota) || isNaN(puntata) || puntata <= 0) {
+            alert('Compila tutti i campi obbligatori correttamente.');
+            return;
+        }
+        
+        const nuova = {
+            id: Date.now() + Math.floor(Math.random()*1000),
+            data: new Date(data),
+            evento, sport, bookmaker, tipologia, quota, puntata, esito, note
+        };
+        
+        scommesse.push(nuova);
+        saveData();
+        populateFilterOptions();
+        updateDashboard();
+        renderTable();
+        updateChart();
+        renderSportStats();
+        renderBookmakerStats();
+        
+        // Reset campi (mantieni data odierna)
+        document.getElementById('evento').value = '';
+        document.getElementById('dataScommessa').value = new Date().toISOString().split('T')[0];
+        document.getElementById('quota').value = '2.00';
+        document.getElementById('puntata').value = '10.00';
+        document.getElementById('esito').value = 'pending';
+        document.getElementById('note').value = '';
+    }
+
+    function deleteScommessa(id) {
+        if (!confirm('Eliminare questa scommessa?')) return;
+        scommesse = scommesse.filter(s => s.id !== id);
+        saveData();
+        populateFilterOptions();
+        updateDashboard();
+        renderTable();
+        updateChart();
+        renderSportStats();
+        renderBookmakerStats();
+    }
+
+    function editEsito(id) {
+        const scommessa = scommesse.find(s => s.id === id);
+        if (!scommessa) return;
+        const esiti = ['pending','win','loss','halfWin','halfLoss','void','cashout'];
+        let idx = esiti.indexOf(scommessa.esito);
+        idx = (idx + 1) % esiti.length;
+        scommessa.esito = esiti[idx];
+        saveData();
+        updateDashboard();
+        renderTable();
+        updateChart();
+        renderSportStats();
+        renderBookmakerStats();
+    }
+
+    // ==================== RENDER TABELLA CON FILTRI ====================
+    function renderTable() {
+        const filterEsito = document.getElementById('filterEsito').value;
+        const filterSport = document.getElementById('filterSport').value;
+        const filterBookmaker = document.getElementById('filterBookmaker').value;
+        const searchText = document.getElementById('searchEvento').value.toLowerCase();
+        
+        let filtered = scommesse.filter(s => {
+            if (filterEsito !== 'all' && s.esito !== filterEsito) return false;
+            if (filterSport !== 'all' && s.sport !== filterSport) return false;
+            if (filterBookmaker !== 'all' && s.bookmaker !== filterBookmaker) return false;
+            if (searchText && !s.evento.toLowerCase().includes(searchText)) return false;
+            return true;
+        });
+        
+        // Ordinamento per data decrescente
+        filtered.sort((a,b) => b.data - a.data);
+        
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        filtered.forEach(s => {
+            const tr = document.createElement('tr');
+            const dataStr = s.data.toLocaleDateString('it-IT');
+            
+            let vincita = 0;
+            if (s.esito === 'win') vincita = s.puntata * s.quota;
+            else if (s.esito === 'halfWin') vincita = s.puntata + (s.puntata * (s.quota - 1) / 2);
+            else if (s.esito === 'halfLoss') vincita = s.puntata / 2;
+            else if (s.esito === 'void') vincita = s.puntata;
+            else if (s.esito === 'cashout') vincita = s.cashoutAmount || s.puntata;
+            else vincita = 0;
+            
+            const profitto = vincita - s.puntata;
+            const profClass = profitto >= 0 ? 'profit-positive' : 'profit-negative';
+            const vincitaDisplay = (s.esito === 'pending') ? '—' : `€${vincita.toFixed(2)}`;
+            const profittoDisplay = (s.esito === 'pending') ? '—' : `€${profitto.toFixed(2)}`;
+            
+            tr.innerHTML = `
+                <td>${dataStr}</td>
+                <td>${s.evento} ${s.note ? `<br><small>${s.note}</small>` : ''}</td>
+                <td>${s.sport}</td>
+                <td>${s.bookmaker}</td>
+                <td>${s.tipologia}</td>
+                <td>${s.quota.toFixed(2)}</td>
+                <td>€${s.puntata.toFixed(2)}</td>
+                <td><button class="secondary small-btn" onclick="editEsito(${s.id})">${s.esito}</button></td>
+                <td>${vincitaDisplay}</td>
+                <td class="${profClass}">${profittoDisplay}</td>
+                <td><button class="danger small-btn" onclick="deleteScommessa(${s.id})">🗑️</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function populateFilterOptions() {
+        const sports = [...new Set(scommesse.map(s => s.sport))];
+        const bookmakers = [...new Set(scommesse.map(s => s.bookmaker))];
+        
+        const sportSelect = document.getElementById('filterSport');
+        sportSelect.innerHTML = '<option value="all">Tutti gli sport</option>';
+        sports.forEach(s => { if(s) sportSelect.innerHTML += `<option value="${s}">${s}</option>`; });
+        
+        const bookSelect = document.getElementById('filterBookmaker');
+        bookSelect.innerHTML = '<option value="all">Tutti i bookmaker</option>';
+        bookmakers.forEach(b => { if(b) bookSelect.innerHTML += `<option value="${b}">${b}</option>`; });
+    }
+
+    function resetFilters() {
+        document.getElementById('filterEsito').value = 'all';
+        document.getElementById('filterSport').value = 'all';
+        document.getElementById('filterBookmaker').value = 'all';
+        document.getElementById('searchEvento').value = '';
+        renderTable();
+    }
+
+    // ==================== GRAFICO ====================
+    function updateChart() {
+        const ctx = document.getElementById('balanceChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+        
+        // Prepara dati cumulativi
+        const sorted = [...scommesse].sort((a,b) => a.data - b.data);
+        let balance = bankrollIniziale;
+        const labels = ['Inizio'];
+        const dataPoints = [balance];
+        
+        sorted.forEach(s => {
+            if (s.esito === 'pending') return;
+            let vincita = 0;
+            if (s.esito === 'win') vincita = s.puntata * s.quota;
+            else if (s.esito === 'halfWin') vincita = s.puntata + (s.puntata * (s.quota - 1) / 2);
+            else if (s.esito === 'halfLoss') vincita = s.puntata / 2;
+            else if (s.esito === 'void') vincita = s.puntata;
+            else if (s.esito === 'cashout') vincita = s.cashoutAmount || s.puntata;
+            else vincita = 0;
+            
+            balance += (vincita - s.puntata);
+            labels.push(s.data.toLocaleDateString('it-IT'));
+            dataPoints.push(balance);
+        });
+        
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Bankroll (€)',
+                    data: dataPoints,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,0.05)',
+                    tension: 0.2,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
             }
         });
+    }
 
-        // Esporta/Importa JSON
-        document.getElementById('exportDataBtn').addEventListener('click', ()=>{
-            const dataStr = JSON.stringify({ bankroll, bets }, null, 2);
-            const blob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `bettracker_backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click(); URL.revokeObjectURL(url);
+    // ==================== STATISTICHE SPORT/BOOKMAKER ====================
+    function renderSportStats() {
+        const stats = {};
+        scommesse.forEach(s => {
+            if (s.esito === 'pending') return;
+            if (!stats[s.sport]) stats[s.sport] = { puntato:0, vinto:0, count:0 };
+            stats[s.sport].puntato += s.puntata;
+            let vincita = 0;
+            if (s.esito === 'win') vincita = s.puntata * s.quota;
+            else if (s.esito === 'halfWin') vincita = s.puntata + (s.puntata * (s.quota - 1) / 2);
+            else if (s.esito === 'halfLoss') vincita = s.puntata / 2;
+            else if (s.esito === 'void') vincita = s.puntata;
+            else if (s.esito === 'cashout') vincita = s.cashoutAmount || s.puntata;
+            stats[s.sport].vinto += vincita;
+            stats[s.sport].count++;
         });
-        document.getElementById('importDataBtn').addEventListener('click', ()=>{
-            document.getElementById('importFileInput').click();
+        
+        let html = '<table style="width:100%;">';
+        html += '<tr><th>Sport</th><th>Scommesse</th><th>Puntato</th><th>Vinto</th><th>Profitto</th><th>ROI</th></tr>';
+        for (let sport in stats) {
+            const d = stats[sport];
+            const profitto = d.vinto - d.puntato;
+            const roi = d.puntato > 0 ? (profitto / d.puntato)*100 : 0;
+            html += `<tr><td>${sport}</td><td>${d.count}</td><td>€${d.puntato.toFixed(2)}</td><td>€${d.vinto.toFixed(2)}</td>
+                     <td class="${profitto>=0?'profit-positive':'profit-negative'}">€${profitto.toFixed(2)}</td><td>${roi.toFixed(2)}%</td></tr>`;
+        }
+        html += '</table>';
+        document.getElementById('sportStats').innerHTML = html || '<p>Nessuna scommessa completata.</p>';
+    }
+
+    function renderBookmakerStats() {
+        const stats = {};
+        scommesse.forEach(s => {
+            if (s.esito === 'pending') return;
+            if (!stats[s.bookmaker]) stats[s.bookmaker] = { puntato:0, vinto:0, count:0 };
+            stats[s.bookmaker].puntato += s.puntata;
+            let vincita = 0;
+            if (s.esito === 'win') vincita = s.puntata * s.quota;
+            else if (s.esito === 'halfWin') vincita = s.puntata + (s.puntata * (s.quota - 1) / 2);
+            else if (s.esito === 'halfLoss') vincita = s.puntata / 2;
+            else if (s.esito === 'void') vincita = s.puntata;
+            else if (s.esito === 'cashout') vincita = s.cashoutAmount || s.puntata;
+            stats[s.bookmaker].vinto += vincita;
+            stats[s.bookmaker].count++;
         });
-        document.getElementById('importFileInput').addEventListener('change', (e)=>{
+        let html = '<table style="width:100%;">';
+        html += '<tr><th>Bookmaker</th><th>Scommesse</th><th>Puntato</th><th>Vinto</th><th>Profitto</th><th>ROI</th></tr>';
+        for (let b in stats) {
+            const d = stats[b];
+            const profitto = d.vinto - d.puntato;
+            const roi = d.puntato > 0 ? (profitto / d.puntato)*100 : 0;
+            html += `<tr><td>${b}</td><td>${d.count}</td><td>€${d.puntato.toFixed(2)}</td><td>€${d.vinto.toFixed(2)}</td>
+                     <td class="${profitto>=0?'profit-positive':'profit-negative'}">€${profitto.toFixed(2)}</td><td>${roi.toFixed(2)}%</td></tr>`;
+        }
+        html += '</table>';
+        document.getElementById('bookmakerStats').innerHTML = html || '<p>Nessuna scommessa completata.</p>';
+    }
+
+    // ==================== KELLY ====================
+    function calculateKelly() {
+        const quota = parseFloat(document.getElementById('kQuota').value);
+        const probPercent = parseFloat(document.getElementById('kProb').value);
+        const fraction = parseFloat(document.getElementById('kFraction').value);
+        if (isNaN(quota) || isNaN(probPercent) || quota<=1 || probPercent<=0 || probPercent>=100) {
+            document.getElementById('kellyResult').innerHTML = '❌ Inserisci valori validi.';
+            return;
+        }
+        const p = probPercent / 100;
+        const q = 1 - p;
+        const b = quota - 1;
+        let fStar = (b * p - q) / b;
+        fStar = fStar * fraction;
+        const stats = calcolaStatistiche();
+        const bankroll = stats.bankrollAttuale;
+        const puntata = Math.max(0, bankroll * fStar);
+        let html = '';
+        if (fStar <= 0) {
+            html = '⚠️ <strong>Nessuna puntata consigliata.</strong> Il valore atteso è negativo.';
+        } else {
+            html = `✅ <strong>Puntata consigliata:</strong> €${puntata.toFixed(2)} (${(fStar*100).toFixed(2)}% del bankroll)<br>
+                    📈 Valore atteso (EV): ${((b*p - q)*100).toFixed(2)}%`;
+        }
+        document.getElementById('kellyResult').innerHTML = html;
+    }
+
+    // ==================== UTILITY ====================
+    function editBankroll() {
+        const nuovo = prompt('Inserisci il nuovo bankroll iniziale (€):', bankrollIniziale);
+        if (nuovo && !isNaN(parseFloat(nuovo)) && parseFloat(nuovo)>0) {
+            bankrollIniziale = parseFloat(nuovo);
+            saveData();
+            updateDashboard();
+            updateChart();
+        }
+    }
+
+    function exportToCSV() {
+        let csv = "Data,Evento,Sport,Bookmaker,Tipologia,Quota,Puntata,Esito,Vincita,Profitto,Note\n";
+        scommesse.forEach(s => {
+            let vincita = 0, profitto = 0;
+            if (s.esito === 'win') { vincita = s.puntata * s.quota; profitto = vincita - s.puntata; }
+            else if (s.esito === 'halfWin') { vincita = s.puntata + (s.puntata * (s.quota - 1) / 2); profitto = vincita - s.puntata; }
+            else if (s.esito === 'halfLoss') { vincita = s.puntata / 2; profitto = vincita - s.puntata; }
+            else if (s.esito === 'void') { vincita = s.puntata; profitto = 0; }
+            else if (s.esito === 'cashout') { vincita = s.cashoutAmount || s.puntata; profitto = vincita - s.puntata; }
+            else if (s.esito === 'loss') profitto = -s.puntata;
+            
+            csv += `${s.data.toLocaleDateString()},${s.evento},${s.sport},${s.bookmaker},${s.tipologia},${s.quota},${s.puntata},${s.esito},${vincita.toFixed(2)},${profitto.toFixed(2)},${s.note || ''}\n`;
+        });
+        downloadBlob(csv, 'scommesse.csv', 'text/csv');
+    }
+
+    function exportBackup() {
+        const backup = { bankrollIniziale, scommesse };
+        downloadBlob(JSON.stringify(backup, null, 2), 'bet_backup.json', 'application/json');
+    }
+
+    function importBackup() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
             const file = e.target.files[0];
-            if (!file) return;
             const reader = new FileReader();
-            reader.onload = (ev) => {
+            reader.onload = ev => {
                 try {
-                    const imported = JSON.parse(ev.target.result);
-                    if (imported.bankroll !== undefined && imported.bets) {
-                        bankroll = imported.bankroll;
-                        bets = imported.bets;
+                    const data = JSON.parse(ev.target.result);
+                    if (data.bankrollIniziale && Array.isArray(data.scommesse)) {
+                        bankrollIniziale = data.bankrollIniziale;
+                        scommesse = data.scommesse.map(s => ({...s, data: new Date(s.data)}));
                         saveData();
-                        refreshAllUI();
-                        alert('Backup importato con successo');
-                    } else throw new Error('Formato non valido');
-                } catch(err) { alert('File non valido'); }
-                document.getElementById('importFileInput').value = '';
+                        location.reload();
+                    } else alert('File non valido');
+                } catch(ex) { alert('Errore nel parsing'); }
             };
             reader.readAsText(file);
-        });
+        };
+        input.click();
+    }
 
-        // Inizializzazione
-        function init() {
-            loadData();
-            // set default date
-            document.getElementById('betDate').value = new Date().toISOString().slice(0,10);
-            setupTabs();
-            refreshAllUI();
-            // event listeners
-            document.getElementById('saveBetBtn').addEventListener('click', addNewBet);
-            document.getElementById('betOdds').addEventListener('input', renderStakeSuggestions);
-            window.openBankrollModal = openBankrollModal;
-            window.closeBankrollModal = closeBankrollModal;
+    function clearAllData() {
+        if (confirm('⚠️ ATTENZIONE: Tutti i dati andranno persi. Continuare?')) {
+            localStorage.clear();
+            location.reload();
         }
-        init();
-    })();
+    }
+
+    function downloadBlob(content, fileName, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+    }
+
+    // Avvio
+    window.onload = initApp;
 </script>
+
 </body>
 </html>
